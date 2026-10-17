@@ -1,0 +1,175 @@
+{
+  "version": 1,
+  "weeks": 13,
+  "products": [
+    {
+      "id": "hair-serum",
+      "name": "Advanced Hair Growth Serum",
+      "short": "Hair serum",
+      "concern": "Hair thinning and hair fall",
+      "icon": "serum",
+      "photo": true,
+      "photoHint": "Your parting, in the same light and angle each week",
+      "expectedChangeWeek": 13,
+      "source": "https://bebodywise.com/product/hair-growth-serum-roll-on",
+      "usage": "Use as directed",
+      "months": [
+        { "month": 1, "type": "app", "text": "Build the habit. Use it as directed every day. Visible change usually isn't expected yet." },
+        { "month": 2, "type": "brand", "text": "Baby hair starts to show." },
+        { "month": 3, "type": "brand", "text": "\"Visible reduction in hair thinning\"" },
+        { "month": 4, "type": "brand", "text": "Volume builds from Month 4 onwards." }
+      ],
+      "mainSign": "hairfall",
+      "signs": [
+        { "id": "hairfall", "label": "Hair fall", "question": "How much hair fell out this week, in the shower, on your comb or on your pillow?", "anchors": ["Very heavy", "A lot", "Some", "Very little", "None"] },
+        { "id": "parting", "label": "Scalp at the parting", "question": "Looking at your parting this week, in a mirror or a photo, how much scalp shows?", "anchors": ["A lot", "Quite a bit", "Some", "A little", "Hardly any"] },
+        { "id": "scalp", "label": "Scalp comfort", "question": "How much itching, redness, flaking or burning did your scalp have this week?", "anchors": ["Severe", "Bothersome", "Mild", "Barely noticeable", "None"] }
+      ],
+      "redFlag": "This week, did you notice a bald patch, hair coming out in clumps, or a painful or swollen scalp?",
+      "rules": [
+        { "type": "improveBy", "week": 13, "signs": ["hairfall", "parting"], "reason": "By Week 13, Be Bodywise says you should see a visible reduction in thinning. Your hair fall and parting ratings haven't improved since you started." }
+      ]
+    },
+    {
+      "id": "hair-gummies",
+      "name": "Biotin Hair Gummies",
+      "short": "Hair gummies",
+      "concern": "Hair strength and hair fall",
+      "icon": "gummy",
+      "photo": true,
+      "photoHint": "Your hair or parting, in the same light each week",
+      "expectedChangeWeek": 13,
+      "source": "https://bebodywise.com/product/hair-health-gummies",
+      "usage": "One gummy a day, after a meal",
+      "note": "Tell your doctor or lab that you take biotin before any blood test.",
+      "months": [
+        { "month": 1, "type": "brand", "text": "\"You will not see results in just 1 month.\" \"Follow a 3 month routine for visible results.\"" },
+        { "month": 2, "type": "next", "text": "Month 3: \"Visible Gain in Hair Strength\"" },
+        { "month": 3, "type": "brand", "text": "\"Visible Gain in Hair Strength\"" },
+        { "month": 4, "type": "brand", "text": "Strength and texture keep improving from Month 4." }
+      ],
+      "mainSign": "hairfall",
+      "signs": [
+        { "id": "hairfall", "label": "Hair fall", "question": "How much hair fell out this week, in the shower, on your comb or on your pillow?", "anchors": ["Very heavy", "A lot", "Some", "Very little", "None"] },
+        { "id": "breakage", "label": "Breakage", "question": "When you combed or brushed this week, how much snapping or breakage did you notice?", "anchors": ["A lot", "Quite a bit", "Some", "A little", "None"] },
+        { "id": "tolerance", "label": "Comfort after taking it", "question": "How much stomach upset, headache or other discomfort did you have after taking the gummy this week?", "anchors": ["Severe", "Bothersome", "Mild", "Barely noticeable", "None"] }
+      ],
+      "redFlag": "This week, did you get hives, swelling, dizziness, or sudden patchy hair loss?",
+      "rules": [
+        { "type": "improveBy", "week": 13, "signs": ["hairfall", "breakage"], "reason": "By Week 13, Be Bodywise says you should see a visible gain in hair strength. Your hair fall and breakage ratings haven't improved since you started. A doctor can check other causes, such as iron or thyroid." }
+      ]
+    },
+    {
+      "id": "body-wash",
+      "name": "5% AHA BHA Exfoliating Body Wash",
+      "short": "AHA BHA body wash",
+      "concern": "Bumps, strawberry skin, tan and rough texture",
+      "icon": "wash",
+      "photo": true,
+      "photoHint": "The area you're treating, in the same light each week",
+      "expectedChangeWeek": 13,
+      "source": "https://bebodywise.com/product/5-aha-bha-bodywash",
+      "usage": "Use as directed; start gently",
+      "months": [
+        { "month": 1, "type": "app", "text": "Build the habit. Start gently, as the brand advises new users, and use it as directed." },
+        { "month": 2, "type": "next", "text": "Month 3. At Week 6 Steady checks whether your bumps have started to improve, in line with American Academy of Dermatology guidance." },
+        { "month": 3, "type": "brand", "text": "Use it \"regularly and consistently for 3-4 months\" for results." },
+        { "month": 4, "type": "brand", "text": "Keep going up to 4 months, as the brand advises." }
+      ],
+      "mainSign": "patches",
+      "signs": [
+        { "id": "patches", "label": "Bumps or dark patches", "question": "This week, how noticeable are the bumps or dark patches you're treating?", "anchors": ["Very noticeable", "Quite noticeable", "Somewhat", "Slightly", "Not noticeable"] },
+        { "id": "texture", "label": "Skin texture", "question": "Run your hand over the area. How does the skin feel?", "anchors": ["Very rough", "Rough", "Somewhat smooth", "Mostly smooth", "Very smooth"] },
+        { "id": "comfort", "label": "Skin after washing", "question": "How did your skin feel after washing this week?", "anchors": ["Painful or rash", "Burning or peeling", "Dryness that lasts", "Brief tingle", "No discomfort"] }
+      ],
+      "redFlag": "This week, did you get new darker patches, blisters, or deep painful lumps where you used the wash?",
+      "rules": [
+        { "type": "improveBy", "week": 6, "signs": ["patches"], "reason": "By Week 6, dermatology guidance expects bumps to start improving. Your rating hasn't moved since you started." },
+        { "type": "improveBy", "week": 13, "signs": ["patches", "texture"], "reason": "By Week 13 you've used it for the 3 months Be Bodywise recommends, and your ratings haven't improved since you started." }
+      ]
+    },
+    {
+      "id": "urea-lotion",
+      "name": "10% Urea Body Lotion",
+      "short": "Urea body lotion",
+      "concern": "Very dry, flaky and rough skin",
+      "icon": "lotion",
+      "photo": true,
+      "photoHint": "The rough patch, in the same light each week",
+      "expectedChangeWeek": 13,
+      "source": "https://bebodywise.com/product/10-urea-lotion",
+      "usage": "Apply as directed",
+      "months": [
+        { "month": 1, "type": "brand", "text": "Moisture \"upto 48 hrs\". \"Soothes itchy skin.\"" },
+        { "month": 2, "type": "next", "text": "Month 3. At Week 6 Steady checks whether your rough patches have started to improve, in line with American Academy of Dermatology guidance." },
+        { "month": 3, "type": "brand", "text": "\"3-4 months\" for a noticeable difference." },
+        { "month": 4, "type": "brand", "text": "Keep going up to 4 months, as the brand advises." }
+      ],
+      "mainSign": "rough",
+      "signs": [
+        { "id": "dryness", "label": "Dryness", "question": "How dry or flaky did your skin feel this week, a few hours after applying?", "anchors": ["Very dry and flaking", "Dry and tight", "A little dry", "Comfortable", "Soft all day"] },
+        { "id": "rough", "label": "Rough patches", "question": "Run your hand over the rough patch on your elbows, knees or arms. How does it feel?", "anchors": ["Very rough", "Rough", "Somewhat smooth", "Mostly smooth", "Very smooth"] },
+        { "id": "itch", "label": "Itch", "question": "In the past 7 days, how itchy was this skin?", "anchors": ["Very much", "Quite a bit", "Somewhat", "A little bit", "Not at all"] }
+      ],
+      "redFlag": "This week, did you get a rash, swelling, cracked or bleeding skin, or stinging that didn't fade?",
+      "rules": [
+        { "type": "improveBy", "week": 6, "signs": ["rough"], "reason": "By Week 6, dermatology guidance expects rough patches to start improving. Your rating hasn't moved since you started." },
+        { "type": "improveBy", "week": 13, "signs": ["rough", "dryness"], "reason": "By Week 13 you've reached the 3 months Be Bodywise mentions, and your ratings haven't improved since you started." }
+      ]
+    },
+    {
+      "id": "underarm-roll-on",
+      "name": "4% AHA BHA Underarm Roll-on",
+      "short": "Underarm roll-on",
+      "concern": "Underarm odour and darkness",
+      "icon": "rollon",
+      "photo": true,
+      "photoHint": "Your underarm, in the same light each week",
+      "expectedChangeWeek": 13,
+      "source": "https://bebodywise.com/product/4-aha-bha-underarm-roll-on",
+      "usage": "Apply as directed",
+      "months": [
+        { "month": 1, "type": "brand", "text": "\"Reduces 99.5% bacteria in 10 minutes.\" \"Feel fresh for 12 hours.\" \"You will not see results in just month 1.\"" },
+        { "month": 2, "type": "next", "text": "Month 3: lighter underarms." },
+        { "month": 3, "type": "brand", "text": "\"Use it for 3 months\" for lighter underarms." }
+      ],
+      "mainSign": "shade",
+      "signs": [
+        { "id": "odour", "label": "Odour by evening", "question": "On most days this week, how noticeable was underarm odour by evening?", "anchors": ["Very much", "Quite a bit", "Somewhat", "A little bit", "Not at all"] },
+        { "id": "shade", "label": "Underarm shade", "question": "This week, how dark does your underarm look compared with the skin around it?", "anchors": ["3 or more shades darker", "2 shades darker", "1 shade darker", "Slightly darker", "Same as the skin around it"] },
+        { "id": "comfort", "label": "Comfort after applying", "question": "How much redness, itching or stinging did you have after applying this week?", "anchors": ["Severe", "Bothersome", "Mild", "Barely noticeable", "None"] }
+      ],
+      "redFlag": "This week, did you get broken skin, a rash, or burning that lasted?",
+      "rules": [
+        { "type": "darkerTwice", "sign": "shade", "reason": "Your underarm has looked darker than when you started on two check-ins in a row. Irritation can cause darkening, so it's worth checking with a doctor." },
+        { "type": "improveBy", "week": 13, "signs": ["shade"], "reason": "By Week 13 you've used it for the 3 months Be Bodywise recommends, and your underarm shade hasn't improved since you started." }
+      ]
+    },
+    {
+      "id": "multivitamin",
+      "name": "Multivitamin Gummies",
+      "short": "Multivitamin gummies",
+      "concern": "Energy, immunity and stress",
+      "icon": "gummy",
+      "photo": false,
+      "expectedChangeWeek": null,
+      "source": "https://bebodywise.com/product/multivitamin-gummies",
+      "usage": "Take as directed",
+      "months": [
+        { "month": 1, "type": "app", "text": "Take it as directed every day. Be Bodywise doesn't promise a timeline, so track how you feel each week." },
+        { "month": 2, "type": "app", "text": "Keep tracking. Be Bodywise doesn't set a milestone for this month." },
+        { "month": 3, "type": "check", "text": "Week 13 review of your tiredness, illness and stress ratings." }
+      ],
+      "mainSign": "tired",
+      "signs": [
+        { "id": "tired", "label": "Tiredness", "question": "In the past 7 days, how tired did you feel during the day?", "anchors": ["Very much", "Quite a bit", "Somewhat", "A little bit", "Not at all"] },
+        { "id": "illness", "label": "Minor illness", "question": "In the past 7 days, how much did colds, coughs or other minor illnesses get in your way?", "anchors": ["Very much", "Quite a bit", "Somewhat", "A little bit", "Not at all"] },
+        { "id": "stress", "label": "Stress", "question": "In the past 7 days, how stressed or anxious did you feel?", "anchors": ["Very much", "Quite a bit", "Somewhat", "A little bit", "Not at all"] }
+      ],
+      "redFlag": "This week, did you get hives or swelling, or feel tired along with weight loss, mood changes or a racing heartbeat?",
+      "rules": [
+        { "type": "lowFor", "sign": "tired", "max": 2, "weeks": 3, "reason": "You've felt tired \"Quite a bit\" or more for 3 weeks in a row. The NHS suggests seeing a doctor when tiredness lasts a few weeks, to check causes such as anaemia or thyroid." }
+      ]
+    }
+  ]
+}
