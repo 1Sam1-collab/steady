@@ -1,5 +1,5 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js?v=11';
+import * as screens from './screens.js?v=12';
 import * as store from './store.js';
 import * as eng from './engine.js';
 import * as demo from './demo.js';
@@ -25,9 +25,10 @@ function refresh(hash) {
 function dueCheckinHash() {
   const data = store.load();
   if (!data.tracked.length) return '#/welcome';
-  const due = data.tracked.find(t => !store.getCheckin(data, t.productId, eng.currentWeek(t.startDate)));
+  const weekNow = t => Math.min(eng.TOTAL_WEEKS, Math.max(eng.currentWeek(t.startDate), ...data.checkins.filter(c => c.productId === t.productId).map(c => c.week)));
+  const due = data.tracked.find(t => !store.getCheckin(data, t.productId, weekNow(t)));
   const t = due || data.tracked[0];
-  return `#/checkin/${t.productId}/${eng.currentWeek(t.startDate)}`;
+  return `#/checkin/${t.productId}/${weekNow(t)}`;
 }
 
 function setNav(route) {

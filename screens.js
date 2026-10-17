@@ -42,6 +42,12 @@ function isStandalone() {
   return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
+// The week she is on: by start date, or the latest week she has already checked in, whichever is later.
+function weekNow(data, t) {
+  const latest = data.checkins.filter(c => c.productId === t.productId).reduce((m, c) => Math.max(m, c.week), 0);
+  return Math.min(eng.TOTAL_WEEKS, Math.max(eng.currentWeek(t.startDate), latest));
+}
+
 /* ---------- 1. Welcome ---------- */
 export function welcome(view) {
   const steps = [
@@ -311,7 +317,7 @@ export function checkin(view, productId, weekStr) {
   if (p.photo) steps.push('photo');
   if (week > 0) steps.push('redflag');
   let i = 0;
-  const cur = eng.currentWeek(t.startDate);
+  const cur = weekNow(data, t);
   const body = h('div', { class: 'step-body' });
   const dots = h('div', { class: 'dots', 'aria-hidden': 'true' });
   const next = h('button', { class: 'btn btn-primary', type: 'button' });
@@ -486,7 +492,7 @@ export function timeline(view, productId) {
   const p = P(t.productId);
   const missingBase = data.tracked.find(x => !store.getCheckin(data, x.productId, 0));
   const list = store.checkinsFor(data, p.id);
-  const cur = eng.currentWeek(t.startDate);
+  const cur = weekNow(data, t);
   const rule = eng.checkRules(p, list);
   const expDate = p.expectedChangeWeek ? eng.formatDate(eng.weekEndDate(t.startDate, p.expectedChangeWeek)) : null;
 
@@ -579,7 +585,7 @@ export function month(view, productId, mStr) {
   if (!p || !t) { ctx.go('#/timeline'); return; }
   const m = p.months.find(x => x.month === parseInt(mStr, 10)) || p.months[0];
   const list = store.checkinsFor(data, p.id);
-  const cur = eng.currentWeek(t.startDate);
+  const cur = weekNow(data, t);
   const weeks = eng.weeksOfMonth(m.month);
   view.append(h('section', { class: 'screen' },
     eyebrow(`MONTH ${m.month} · WHAT TO EXPECT`),
@@ -608,7 +614,7 @@ export function done(view, productId, weekStr) {
   const status = eng.statusLine(p, list, week);
   const t = data.tracked.find(x => x.productId === productId);
   const nextDue = week < eng.TOTAL_WEEKS && t ? eng.formatDate(eng.weekEndDate(t.startDate, week + 1)) : null;
-  const others = data.tracked.filter(x => x.productId !== productId && !store.getCheckin(data, x.productId, eng.currentWeek(x.startDate)));
+  const others = data.tracked.filter(x => x.productId !== productId && !store.getCheckin(data, x.productId, weekNow(data, x)));
   const nextP = others.length ? P(others[0].productId) : null;
   const doneWeeks = new Set(list.filter(c => c.week > 0).map(c => c.week));
   view.append(h('section', { class: 'screen done' },
@@ -619,7 +625,7 @@ export function done(view, productId, weekStr) {
     nextDue ? h('p', { class: 'fine', text: `Next check-in for your ${p.short.toLowerCase()}: ${nextDue}.` }) : h('p', { class: 'fine', text: 'That was your last weekly check-in.' }),
     miniTrend(p, list),
     h('div', { class: 'actions' },
-      nextP ? h('a', { class: 'btn btn-primary', href: `#/checkin/${nextP.id}/${eng.currentWeek(others[0].startDate)}`, text: `Next: ${nextP.short} check-in` }) : null,
+      nextP ? h('a', { class: 'btn btn-primary', href: `#/checkin/${nextP.id}/${weekNow(data, others[0])}`, text: `Next: ${nextP.short} check-in` }) : null,
       h('a', { class: nextP ? 'btn btn-outline' : 'btn btn-primary', href: `#/timeline/${p.id}`, text: 'Back to timeline' }),
       h('a', { class: 'btn btn-quiet', href: `#/progress/${p.id}`, text: 'See progress' }))));
 }
