@@ -45,7 +45,6 @@ function isStandalone() {
 
 /* ---------- 1. Welcome ---------- */
 export function welcome(view) {
-  const startDemo = () => { demo.fill(8); ctx.refresh('#/timeline'); };
   const steps = [
     ['Pick your products', 'Up to three Be Bodywise products, wherever you bought them.'],
     ['Set your start dates', 'Steady works out which week you are in, and sets your reminder time.'],
@@ -67,8 +66,7 @@ export function welcome(view) {
         h('h1', { class: 'hero-title' }, h('span', { text: 'Week by week,' }), h('span', { text: 'see it working.' })),
         h('p', { class: 'hero-lede', text: 'Know what to expect, remember every dose, and see your progress, for up to three products.' }),
         h('div', { class: 'actions' },
-          h('a', { class: 'btn btn-cream', href: '#/pick', text: 'Start' }),
-          h('button', { class: 'btn btn-ghost', type: 'button', text: 'Preview with sample data', onclick: startDemo })),
+          h('a', { class: 'btn btn-cream', href: '#/pick', text: 'Start' })),
         h('p', { class: 'hero-fine', text: 'No sign-up. Your answers stay on this device.' })),
       h('div', { class: 'hero-visual', 'aria-hidden': 'true' }, phoneStage(true))),
     h('div', { class: 'marquee', 'aria-label': 'How Steady works: ' + marqueeItems.join(', ') }, h('div', { class: 'marquee-track', 'aria-hidden': 'true' }, marqueeRow(), marqueeRow())),
@@ -113,8 +111,7 @@ export function welcome(view) {
       h('h2', { class: 'closer-title', text: 'Stays on your phone.' }),
       h('p', { class: 'hero-lede', text: 'No account, no uploads, no tracking. Delete everything with one tap.' }),
       h('div', { class: 'actions' },
-        h('a', { class: 'btn btn-primary', href: '#/pick', text: 'Start' }),
-        h('button', { class: 'btn btn-quiet', type: 'button', text: 'Preview with sample data', onclick: startDemo })))));
+        h('a', { class: 'btn btn-primary', href: '#/pick', text: 'Start' })))));
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stage = view.querySelector('.stage-inner');
@@ -721,8 +718,7 @@ export function settings(view) {
     h('div', { class: 'settings-group' },
       h('h2', { class: 'subtitle', text: 'Your data' }),
       h('p', { text: 'Everything you enter stays in this browser on this device. Nothing is uploaded, and there is no account.' }),
-      store.isDemo() ? h('button', { class: 'btn btn-outline', type: 'button', text: 'Leave sample data', onclick: () => { demo.clear(); ctx.refresh('#/'); } })
-        : h('button', { class: 'btn btn-outline', type: 'button', text: 'Preview with sample data', onclick: () => { demo.fill(8); ctx.refresh('#/timeline'); } }),
+      store.isDemo() ? h('button', { class: 'btn btn-outline', type: 'button', text: 'Leave sample data', onclick: () => { demo.clear(); ctx.refresh('#/'); } }) : null,
       delBtn,
       h('p', { class: 'fine' }, h('a', { href: 'terms.html', text: 'Terms of Service' }), ' · ', h('a', { href: 'privacy.html', text: 'Privacy Policy' })))));
 }
