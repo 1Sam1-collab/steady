@@ -5,7 +5,7 @@ A week-by-week companion for Be Bodywise customers: what to expect month by mont
 ## How it works
 
 - Plain HTML, CSS and JavaScript modules. No framework, no build step, no server.
-- All six products live in `data/products.json`: month-by-month content, the three signs to rate, the red-flag question and the doctor-prompt rules. Adding a product means adding an entry there.
+- All six products live in `products.json`: month-by-month content, the three signs to rate, the red-flag question and the doctor-prompt rules. Adding a product means adding an entry there.
 - Everything a customer enters stays in her browser (localStorage for ratings, IndexedDB for photos). No login, no analytics.
 
 ## Run it locally
@@ -26,13 +26,19 @@ Then open http://localhost:8000.
 
 ## Files
 
+All files sit in one folder.
+
 - `index.html`: the single page and app shell
-- `css/styles.css`: colours, type, phone and laptop layouts, skeleton loaders
-- `js/app.js`: starts the app and routes between screens
-- `js/screens.js`: the 11 screens
-- `js/engine.js`: current week, trends, doctor-prompt rules
-- `js/store.js`: saves and loads data in this browser
-- `js/photos.js`: shrinks photos and stores them in IndexedDB
-- `js/calendar.js`: builds the .ics reminder file
-- `js/demo.js`: labelled sample data for previews
+- `styles.css`: colours, glass surfaces, shapes, phone and laptop layouts, skeleton loaders
+- `app.js`: starts the app, routes between screens, back button
+- `screens.js`: the home page and the 11 app screens
+- `ui.js`: pop-up sheets and toasts
+- `engine.js`: current week, trends, doctor-prompt rules
+- `store.js`: saves and loads data in this browser
+- `photos.js`: shrinks photos and stores them in IndexedDB
+- `calendar.js`: Google Calendar links and the .ics reminder file
+- `demo.js`: labelled sample data for previews
+- `dom.js`: small DOM helpers and the custom line icons
+- `products.json`: the six products, their month-by-month content, signs and rules
 - `terms.html`, `privacy.html`: Terms of Service and Privacy Policy
+- `photo-serum.jpg`, `photo-rollon.jpg`, `icon*.png`, `icon.svg`, `manifest.webmanifest`: images and home-screen icon
