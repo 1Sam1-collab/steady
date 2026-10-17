@@ -81,7 +81,7 @@ function render() {
 
 async function start() {
   try {
-    const res = await fetch('data/products.json', { cache: 'no-cache' });
+    const res = await fetch('products.json', { cache: 'no-cache' });
     const json = await res.json();
     products = json.products;
   } catch (e) {
