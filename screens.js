@@ -32,11 +32,10 @@ function tabs(data, activeId, base) {
     }));
 }
 
+// Be Bodywise's own "Online Experts" page: trichologists, dermatologists and dieticians.
+const CONSULT_URL = 'https://bebodywise.com/schedule-appointment';
 function consultLink() {
-  const ua = navigator.userAgent || '';
-  if (/iPhone|iPad|iPod/i.test(ua)) return 'https://apps.apple.com/in/app/be-bodywise/id6446192851';
-  if (/Android/i.test(ua)) return 'https://play.google.com/store/apps/details?id=com.mosaicwellness.bebodywise';
-  return 'https://bebodywise.com';
+  return CONSULT_URL;
 }
 
 function isStandalone() {
@@ -666,7 +665,7 @@ export function consult(view, productId) {
       eyebrow(p.short.toUpperCase()),
       h('h1', { class: 'title', text: 'It\'s worth checking with a doctor' }),
       h('p', { class: 'lede', text: rule.reason || 'Something in your recent check-ins is worth a doctor\'s view.' }),
-      h('p', { text: 'Be Bodywise has dermatologists and trichologists you can consult in its app. Your check-in is saved.' }),
+      h('p', { text: 'Be Bodywise has dermatologists, trichologists and dieticians online. The button opens their doctor page, where you log in to chat. Your check-in is saved.' }),
       h('div', { class: 'actions' },
         h('a', { class: 'btn btn-accent', href: consultLink(), target: '_blank', rel: 'noopener noreferrer', text: 'Consult a doctor' }),
         h('a', { class: 'btn btn-quiet', href: `#/timeline/${p.id}`, text: 'Back to timeline' })),

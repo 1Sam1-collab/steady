@@ -1,5 +1,5 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js?v=9';
+import * as screens from './screens.js?v=10';
 import * as store from './store.js';
 import * as eng from './engine.js';
 import * as demo from './demo.js';
