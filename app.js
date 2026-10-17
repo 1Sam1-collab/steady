@@ -1,5 +1,5 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js';
+import * as screens from './screens.js?v=3';
 import * as store from './store.js';
 import * as eng from './engine.js';
 import * as demo from './demo.js';
@@ -7,7 +7,7 @@ import { h } from './dom.js';
 
 const view = document.getElementById('view');
 const banner = document.getElementById('banner');
-const backbar = document.getElementById('backbar');
+const backbar = document.getElementById('backbar') || (() => { const d = document.createElement('div'); d.id = 'backbar'; d.className = 'backbar'; banner.after(d); return d; })();
 const draft = {};
 let products = [];
 
