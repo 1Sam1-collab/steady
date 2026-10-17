@@ -51,6 +51,10 @@ export function welcome(view) {
     ['Check in every week', 'Days used, three ratings, an optional photo and one warning-sign question. Under a minute.'],
     ['Watch the trend', 'Your ratings become a line, read against what Be Bodywise says to expect each month.']
   ];
+  const hasPlan = store.load().tracked.length > 0;
+  const mainCta = cls => hasPlan
+    ? h('a', { class: cls, href: '#/timeline', text: 'Open my plan' })
+    : h('a', { class: cls, href: '#/pick', text: 'Start' });
   const marqueeItems = ['Pick your products', 'Set start dates', 'Rate Week 0', 'Check in every week', 'Watch the trend', 'See a doctor if needed'];
   const marqueeRow = () => h('div', { class: 'marquee-row' }, marqueeItems.map((t, i) => h('span', { class: 'marquee-item' }, h('sup', { text: String(i + 1) }), t, h('span', { class: 'marquee-arrow', 'aria-hidden': 'true', text: '/' }))));
   const months = [
@@ -65,7 +69,7 @@ export function welcome(view) {
         h('h1', { class: 'hero-title' }, h('span', { text: 'Week by week,' }), h('span', { text: 'see it working.' })),
         h('p', { class: 'hero-lede', text: 'Know what to expect, remember every dose, and see your progress, for up to three products.' }),
         h('div', { class: 'actions' },
-          h('a', { class: 'btn btn-cream', href: '#/pick', text: 'Start' })),
+          mainCta('btn btn-cream')),
         h('p', { class: 'hero-fine', text: 'No sign-up. Your answers stay on this device.' })),
       h('div', { class: 'hero-visual', 'aria-hidden': 'true' }, phoneStage(true))),
     h('div', { class: 'marquee', 'aria-label': 'How Steady works: ' + marqueeItems.join(', ') }, h('div', { class: 'marquee-track', 'aria-hidden': 'true' }, marqueeRow(), marqueeRow())),
@@ -110,7 +114,7 @@ export function welcome(view) {
       h('h2', { class: 'closer-title', text: 'Stays on your phone.' }),
       h('p', { class: 'hero-lede', text: 'No account, no uploads, no tracking. Delete everything with one tap.' }),
       h('div', { class: 'actions' },
-        h('a', { class: 'btn btn-primary', href: '#/pick', text: 'Start' })))));
+        mainCta('btn btn-primary')))));
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stage = view.querySelector('.stage-inner');
@@ -191,6 +195,7 @@ function previewMock() {
 /* ---------- 2. Pick products ---------- */
 export function pick(view) {
   const data = store.load();
+  const editing = data.tracked.length > 0;
   if (!ctx.draft.selected) ctx.draft.selected = data.tracked.map(t => t.productId);
   const sel = ctx.draft.selected;
   const count = h('p', { class: 'fine', 'aria-live': 'polite' });
@@ -217,9 +222,12 @@ export function pick(view) {
   }));
   update();
   view.append(h('section', { class: 'screen' },
-    eyebrow('STEP 1 OF 3'),
+    eyebrow(editing ? 'EDIT YOUR PLAN' : 'STEP 1 OF 3'),
     h('h1', { class: 'title', text: 'Which products are you using?' }),
     h('p', { class: 'lede', text: 'Pick up to three. A pack, like the hair serum with gummies, counts as two.' }),
+    editing ? h('div', { class: 'note' },
+      h('p', { text: `Your plan is saved, with ${data.checkins.length} check-in${data.checkins.length === 1 ? '' : 's'}. Nothing changes unless you remove a product.` }),
+      h('a', { class: 'btn btn-quiet btn-small', href: '#/timeline', text: 'Back to my plan' })) : null,
     list,
     h('div', { class: 'sticky-actions' }, count, cont)));
 }
@@ -242,7 +250,7 @@ export function dates(view) {
   });
   const time = h('input', { type: 'time', class: 'field', value: data.profile.reminderTime || '21:00', id: 'remind' });
   const err = h('p', { class: 'error', 'aria-live': 'polite' });
-  const save = () => {
+  const save = (e, confirmed = false) => {
     const tracked = [];
     for (const id of sel) {
       const v = inputs[id].value;
@@ -252,6 +260,18 @@ export function dates(view) {
     }
     const d = store.load();
     const removed = d.tracked.filter(t => !sel.includes(t.productId)).map(t => t.productId);
+    const lost = d.checkins.filter(c => removed.includes(c.productId)).length;
+    if (lost && !confirmed) {
+      ui.showModal({
+        eyebrow: 'BEFORE YOU SAVE',
+        title: `Remove ${removed.map(id => P(id).short).join(' and ')}?`,
+        body: [h('p', { text: `This deletes ${lost} saved check-in${lost === 1 ? '' : 's'} for ${removed.length === 1 ? 'it' : 'them'}. Your other products keep their check-ins.` })],
+        actions: [
+          h('button', { class: 'btn btn-primary', type: 'button', text: 'Keep them', onclick: () => { ui.closeModal(); ctx.draft.selected = null; ctx.go('#/pick'); } }),
+          h('button', { class: 'btn btn-quiet', type: 'button', text: 'Remove and save', onclick: () => { ui.closeModal(); save(null, true); } })]
+      });
+      return;
+    }
     removed.forEach(id => { d.checkins = d.checkins.filter(c => c.productId !== id); });
     d.tracked = tracked;
     d.profile.reminderTime = time.value || '21:00';
@@ -263,8 +283,9 @@ export function dates(view) {
     ctx.go(needBaseline ? `#/checkin/${needBaseline.productId}/0` : '#/timeline');
   };
   view.append(h('section', { class: 'screen' },
-    eyebrow('STEP 2 OF 3'),
+    eyebrow(data.tracked.length ? 'EDIT YOUR PLAN' : 'STEP 2 OF 3'),
     h('h1', { class: 'title', text: 'Start dates and reminders' }),
+    data.tracked.length ? h('p', { class: 'lede', text: 'Your saved start dates are filled in. Check-ins stay as they are.' }) : null,
     h('div', { class: 'stack' }, rows),
     h('div', { class: 'date-row' }, icon('calendar', 'icon'),
       h('label', { class: 'date-label', for: 'remind' }, h('span', { class: 'product-name', text: 'Daily reminder time' }), h('span', { class: 'fine', text: 'Used when you add reminders to your calendar' })),

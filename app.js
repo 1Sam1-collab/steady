@@ -1,9 +1,10 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js?v=10';
+import * as screens from './screens.js?v=11';
 import * as store from './store.js';
 import * as eng from './engine.js';
 import * as demo from './demo.js';
 import { h } from './dom.js';
+import { closeModal } from './ui.js?v=7';
 
 const view = document.getElementById('view');
 const banner = document.getElementById('banner');
@@ -37,6 +38,8 @@ function setNav(route) {
     if (a.dataset.nav === 'checkin') a.setAttribute('href', dueCheckinHash());
   });
   const hasData = store.load().tracked.length > 0;
+  const cta = document.querySelector('.topbar-cta');
+  if (cta) { cta.textContent = hasData ? 'My plan' : 'Start'; cta.setAttribute('href', hasData ? '#/timeline' : '#/pick'); }
   document.body.classList.toggle('no-nav', !hasData || ['welcome', 'pick', 'dates'].includes(route));
   document.body.classList.toggle('is-landing', route === 'welcome');
 }
@@ -104,6 +107,7 @@ function render() {
   const data = store.load();
   if (!route) route = data.tracked.length ? 'timeline' : 'welcome';
   const stack = track(location.hash || '#/');
+  closeModal();
   view.replaceChildren();
   drawBanner();
   drawBack(route, parts, stack);
