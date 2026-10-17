@@ -514,3 +514,24 @@ body.is-landing .footer { margin-top: 0; }
 .phone { color: var(--ink); }
 .month-word { white-space: nowrap; }
 @media (min-width: 900px) { .month-band { grid-template-columns: minmax(0, 460px) 1fr; } .month-word { font-size: 104px; } }
+
+/* ---------- Be Bodywise photo section ---------- */
+.ads { padding-top: 56px; padding-bottom: 24px; display: grid; gap: 40px; }
+.ads > .eyebrow { margin: 0; }
+.ad { display: grid; gap: 20px; align-items: center; animation: settle 700ms cubic-bezier(.2, .7, .2, 1) both; }
+.ad-photo { margin: 0; overflow: hidden; border-radius: var(--radius); background: var(--stone); }
+.ad-photo img { width: 100%; height: auto; display: block; aspect-ratio: 4 / 5; object-fit: cover; transition: transform 900ms cubic-bezier(.2, .7, .2, 1); }
+.ad-product { font-size: 12px; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--blue); margin: 0 0 10px; }
+.ad-quote { font-family: var(--serif); font-size: 40px; line-height: 1.02; letter-spacing: -0.02em; margin: 0 0 14px; text-wrap: balance; }
+.ad-text { font-size: 17px; max-width: 44ch; margin: 0 0 14px; }
+.ad-tags { font-size: 13px; font-weight: 600; color: var(--ink-soft); margin: 0 0 18px; }
+.ad-steady { font-family: var(--serif); font-style: italic; font-size: 20px; color: var(--blue); margin: 0; padding-top: 14px; border-top: 1px solid var(--line); max-width: 36ch; }
+@media (min-width: 900px) {
+  .ads { max-width: 1180px; margin: 0 auto; gap: 72px; padding-top: 96px; }
+  .ad { grid-template-columns: minmax(0, 5fr) minmax(0, 6fr); gap: 64px; }
+  .ad.is-flipped { grid-template-columns: minmax(0, 6fr) minmax(0, 5fr); }
+  .ad.is-flipped .ad-photo { order: 2; }
+  .ad-quote { font-size: 64px; }
+  .ad:hover .ad-photo img { transform: scale(1.03); }
+}
+@media (prefers-reduced-motion: reduce) { .ad { animation: none !important; } .ad-photo img { transition: none; } }
