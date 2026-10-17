@@ -56,7 +56,53 @@ export function welcome(view) {
           h('a', { class: 'btn btn-primary', href: '#/pick', text: 'Start' }),
           h('button', { class: 'btn btn-quiet', type: 'button', text: 'Preview with sample data', onclick: () => { demo.fill(8); ctx.refresh('#/timeline'); } })),
         h('p', { class: 'fine', text: 'No sign-up. Your answers stay on this device.' })),
-      h('div', { class: 'welcome-visual', 'aria-hidden': 'true' }, previewMock())));
+      h('div', { class: 'welcome-visual', 'aria-hidden': 'true' }, phoneStage())));
+  const sec = view.querySelector('.welcome');
+  const stage = view.querySelector('.stage-inner');
+  if (sec && stage && window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    sec.addEventListener('pointermove', e => {
+      const r = sec.getBoundingClientRect();
+      const x = (e.clientX - r.left) / r.width - 0.5;
+      const y = (e.clientY - r.top) / r.height - 0.5;
+      stage.style.setProperty('--ry', `${(x * 14).toFixed(2)}deg`);
+      stage.style.setProperty('--rx', `${(-y * 10).toFixed(2)}deg`);
+    });
+    sec.addEventListener('pointerleave', () => { stage.style.setProperty('--ry', '0deg'); stage.style.setProperty('--rx', '0deg'); });
+  }
+}
+
+function phoneStage() {
+  const screenTimeline = h('div', { class: 'ph-screen' },
+    h('p', { class: 'ph-eyebrow', text: 'WEEK 7 OF 13' }),
+    h('p', { class: 'ph-title', text: 'Hair serum' }),
+    h('div', { class: 'ph-card' }, h('p', { class: 'ph-eyebrow', text: 'MONTH 1' }), h('p', { class: 'ph-type', text: 'App note' }), h('p', { class: 'ph-text', text: 'Build the habit.' }),
+      h('div', { class: 'ph-chips' }, ['W1', 'W2', 'W3', 'W4'].map(c => h('span', { class: 'ph-chip is-done', text: c })))),
+    h('div', { class: 'ph-card is-now' }, h('p', { class: 'ph-eyebrow', text: 'MONTH 2' }), h('p', { class: 'ph-type', text: 'Be Bodywise says' }), h('p', { class: 'ph-text serif', text: 'Baby hair starts to show.' }),
+      h('div', { class: 'ph-chips' }, ['W5', 'W6', 'W7', 'W8'].map((c, i) => h('span', { class: 'ph-chip' + (i < 2 ? ' is-done' : i === 2 ? ' is-current' : ''), text: c })))),
+    h('div', { class: 'ph-card' }, h('p', { class: 'ph-eyebrow', text: 'MONTH 3' }), h('p', { class: 'ph-text serif', text: '"Visible reduction in hair thinning"' })));
+  const screenCheck = h('div', { class: 'ph-screen' },
+    h('p', { class: 'ph-eyebrow', text: 'WEEK 7 CHECK-IN' }),
+    h('p', { class: 'ph-q', text: 'How much hair fell out this week?' }),
+    h('div', { class: 'ph-scale' }, [0, 1, 2, 3, 4].map(i => h('span', { class: i < 2 ? 'is-before' : i === 2 ? 'is-on' : '' }))),
+    h('div', { class: 'ph-words' }, ['Very heavy', 'A lot', 'Some', 'Very little', 'None'].map((w, i) => h('span', { class: i === 2 ? 'is-on' : '', text: w }))),
+    h('p', { class: 'ph-chosen', text: 'Some' }),
+    h('span', { class: 'ph-btn', text: 'Next' }));
+  const pts = [[0, 2], [1, 2], [2, 2], [3, 2], [4, 2], [5, 3], [6, 3], [7, 3]];
+  const X = w => 8 + w * 11, Y = v => 70 - v * 12;
+  const screenProgress = h('div', { class: 'ph-screen' },
+    h('p', { class: 'ph-eyebrow', text: 'PROGRESS' }),
+    h('p', { class: 'ph-title', text: 'Hair fall' }),
+    h('div', { class: 'ph-chart' }, s('svg', { viewBox: '0 0 160 80' },
+      s('rect', { x: 146, y: 4, width: 10, height: 66, class: 'chart-band' }),
+      s('line', { x1: 4, x2: 156, y1: 58, y2: 58, class: 'chart-grid' }),
+      s('line', { x1: 4, x2: 156, y1: 34, y2: 34, class: 'chart-grid' }),
+      s('polyline', { points: pts.map(p => `${X(p[0])},${Y(p[1])}`).join(' '), class: 'chart-line' }),
+      pts.map(p => s('circle', { cx: X(p[0]), cy: Y(p[1]), r: 2.5, class: 'chart-dot' })))),
+    h('p', { class: 'ph-text', text: '"A lot" when you started, "Some" now.' }),
+    h('p', { class: 'ph-type', text: 'You\'re on track.' }));
+  const phone = (cls, inner) => h('div', { class: 'phone-slot ' + cls }, h('div', { class: 'phone-bob' }, h('div', { class: 'phone' }, h('span', { class: 'phone-notch' }), inner)));
+  return h('div', { class: 'stage' }, h('div', { class: 'stage-inner' },
+    phone('is-left', screenCheck), phone('is-center', screenTimeline), phone('is-right', screenProgress)));
 }
 
 function previewMock() {
@@ -144,7 +190,6 @@ export function dates(view) {
     ctx.go(needBaseline ? `#/checkin/${needBaseline.productId}/0` : '#/timeline');
   };
   view.append(h('section', { class: 'screen' },
-    backLink('Back', '#/pick'),
     eyebrow('STEP 2 OF 3'),
     h('h1', { class: 'title', text: 'Start dates and reminders' }),
     h('div', { class: 'stack' }, rows),
@@ -176,7 +221,7 @@ export function checkin(view, productId, weekStr) {
   const body = h('div', { class: 'step-body' });
   const dots = h('div', { class: 'dots', 'aria-hidden': 'true' });
   const next = h('button', { class: 'btn btn-primary', type: 'button' });
-  const back = h('button', { class: 'btn btn-quiet', type: 'button', text: 'Back' });
+  const back = h('button', { class: 'btn btn-quiet', type: 'button', text: 'Previous question' });
   const err = h('p', { class: 'error', 'aria-live': 'polite' });
 
   const ready = key => {
@@ -258,7 +303,6 @@ export function checkin(view, productId, weekStr) {
       existing ? h('p', { class: 'note', text: 'You already checked in for this week. Saving replaces it.' }) : null];
   draw();
   view.append(h('section', { class: 'screen checkin' },
-    week === 0 ? null : backLink('Timeline', `#/timeline/${productId}`),
     ...head, dots, body, err,
     h('div', { class: 'sticky-actions split' }, back, next)));
 }
@@ -356,7 +400,6 @@ export function month(view, productId, mStr) {
   const cur = eng.currentWeek(t.startDate);
   const weeks = eng.weeksOfMonth(m.month);
   view.append(h('section', { class: 'screen' },
-    backLink('Timeline', `#/timeline/${p.id}`),
     eyebrow(`MONTH ${m.month} · WHAT TO EXPECT`),
     h('p', { class: 'claim-type type-' + m.type, text: TYPE_LABEL[m.type] }),
     h('h1', { class: 'display claim-big' + (m.type === 'brand' ? '' : ' is-app'), text: m.text }),

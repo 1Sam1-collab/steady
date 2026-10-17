@@ -7,6 +7,7 @@ import { h } from './dom.js';
 
 const view = document.getElementById('view');
 const banner = document.getElementById('banner');
+const backbar = document.getElementById('backbar');
 const draft = {};
 let products = [];
 
@@ -54,13 +55,57 @@ function drawBanner() {
     h('button', { class: 'btn btn-small btn-quiet', type: 'button', text: 'Leave sample', onclick: () => { demo.clear(); refresh('#/'); } })));
 }
 
+// Remembers the screens visited in this tab, so Back returns to the previous one.
+function readStack() {
+  try { return JSON.parse(sessionStorage.getItem('steady.stack') || '[]'); } catch (e) { return []; }
+}
+function writeStack(st) {
+  try { sessionStorage.setItem('steady.stack', JSON.stringify(st.slice(-30))); } catch (e) { /* ignore */ }
+}
+function track(hash) {
+  const st = readStack();
+  if (st.length > 1 && st[st.length - 2] === hash) st.pop();
+  else if (st[st.length - 1] !== hash) st.push(hash);
+  writeStack(st);
+  return st;
+}
+
+function parentOf(route, parts) {
+  const pid = parts[1];
+  switch (route) {
+    case 'pick': return '#/welcome';
+    case 'dates': return '#/pick';
+    case 'checkin': return parts[2] === '0' ? '#/dates' : `#/timeline/${pid}`;
+    case 'month': case 'done': case 'consult': case 'progress': return pid ? `#/timeline/${pid}` : '#/timeline';
+    case 'settings': return '#/timeline';
+    case 'timeline': return '#/welcome';
+    default: return '#/welcome';
+  }
+}
+
+const BACK_LABEL = { pick: 'Back', dates: 'Back', checkin: 'Back', timeline: 'Back', month: 'Back to timeline', done: 'Back to timeline', progress: 'Back', consult: 'Back', settings: 'Back' };
+
+function drawBack(route, parts, stack) {
+  backbar.replaceChildren();
+  if (route === 'welcome') return;
+  const btn = h('button', { class: 'backbtn', type: 'button', 'aria-label': 'Go back' },
+    h('span', { class: 'backbtn-mark', 'aria-hidden': 'true', text: '‹' }), h('span', { text: BACK_LABEL[route] || 'Back' }));
+  btn.addEventListener('click', () => {
+    if (stack.length > 1) history.back();
+    else go(parentOf(route, parts));
+  });
+  backbar.append(btn);
+}
+
 function render() {
   const parts = (location.hash || '#/').replace(/^#\/?/, '').split('/').filter(Boolean);
   let route = parts[0] || '';
   const data = store.load();
   if (!route) route = data.tracked.length ? 'timeline' : 'welcome';
+  const stack = track(location.hash || '#/');
   view.replaceChildren();
   drawBanner();
+  drawBack(route, parts, stack);
   setNav(route);
   const fn = {
     welcome: () => screens.welcome(view),
