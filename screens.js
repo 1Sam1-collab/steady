@@ -1,11 +1,11 @@
 // Draws each screen from the product file and saved data.
 import { h, s, icon } from './dom.js';
 import * as store from './store.js';
-import * as eng from './engine.js';
+import * as eng from './engine.js?v=2';
 import * as photos from './photos.js';
-import * as cal from './calendar.js?v=7';
+import * as cal from './calendar.js?v=8';
 import * as demo from './demo.js';
-import * as ui from './ui.js?v=7';
+import * as ui from './ui.js?v=8';
 
 const MAX_PRODUCTS = 3;
 const TYPE_LABEL = { brand: 'Be Bodywise says', app: 'App note', next: 'Next milestone', check: 'Steady check' };
@@ -282,7 +282,10 @@ export function dates(view) {
     d.tracked = tracked;
     d.profile.reminderTime = time.value || '21:00';
     d.profile.privacyNoted = true;
-    store.save(d);
+    if (!store.save(d)) {
+      err.textContent = 'This browser isn\'t letting Steady save your plan. Open the link in Chrome or Safari, not inside another app or a private window.';
+      return;
+    }
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
     ctx.draft.selected = null;
     const needBaseline = tracked.find(t => !store.getCheckin(d, t.productId, 0));
@@ -383,6 +386,7 @@ export function checkin(view, productId, weekStr) {
       catch (e) { err.textContent = 'We couldn\'t save the photo on this device. Your ratings are still saved.'; }
     }
     answer.date = eng.isoDate(eng.today());
+    answer.savedAt = Date.now();
     if (week === 0) { answer.doses = null; answer.redFlag = false; }
     const saved = store.saveCheckin(answer);
     if (!saved) { err.textContent = 'This device is out of storage space, so the check-in couldn\'t be saved.'; next.disabled = false; next.textContent = 'Try again'; return; }
@@ -440,6 +444,10 @@ export function reminderSheet() {
   });
   const gl = links.map(l => h('a', { class: 'sheet-option', href: l.url, target: '_blank', rel: 'noopener noreferrer' },
     icon('calendar', 'icon'), h('span', null, h('strong', { text: `Google Calendar: ${l.label}` }), h('small', { text: `${l.sub}, at ${d.profile.reminderTime}. Opens Google Calendar, tap Save.` }))));
+  if (!links.length) {
+    ui.showModal({ eyebrow: 'REMINDERS', title: 'No reminders left to add', body: [h('p', { class: 'lede', text: 'Your 13 weeks are complete, so there is nothing left to schedule.' })], actions: [h('button', { class: 'btn btn-primary', type: 'button', text: 'Got it', onclick: ui.closeModal })] });
+    return;
+  }
   ui.showModal({
     eyebrow: 'REMINDERS',
     title: 'Put your reminders in your calendar',
@@ -502,9 +510,15 @@ export function timeline(view, productId) {
   const doneWeeks = new Set(list.filter(c => c.week > 0).map(c => c.week));
   const dueNow = !missingBase && !doneWeeks.has(cur);
   const left = p.expectedChangeWeek ? p.expectedChangeWeek - cur : null;
-  const banner = missingBase ? null : dueNow
+  const asks = p.photo ? 'Days used, three ratings, an optional photo and one question. Under a minute.' : 'Days used, three ratings and one question. Under a minute.';
+  const finished = eng.daysSinceStart(t.startDate) >= eng.TOTAL_WEEKS * 7;
+  const banner = missingBase ? null : finished && dueNow
+    ? h('div', { class: 'banner' },
+        h('div', null, h('p', { class: 'banner-title', text: 'You have reached the end of the 13 weeks' }), h('p', { class: 'banner-text', text: 'Fill in any week you missed, or see how far you have come.' })),
+        h('a', { class: 'btn btn-outline', href: `#/progress/${p.id}`, text: 'See progress' }))
+    : dueNow
     ? h('div', { class: 'banner is-due' }, h('span', { class: 'banner-pulse', 'aria-hidden': 'true' }),
-        h('div', null, h('p', { class: 'banner-title', text: `Your week ${cur} check-in is ready` }), h('p', { class: 'banner-text', text: 'Three ratings and one question. Under a minute.' })),
+        h('div', null, h('p', { class: 'banner-title', text: `Your week ${cur} check-in is ready` }), h('p', { class: 'banner-text', text: asks })),
         h('a', { class: 'btn btn-primary', href: `#/checkin/${p.id}/${cur}`, text: 'Check in' }))
     : h('div', { class: 'banner' },
         h('div', null, h('p', { class: 'banner-title', text: `Week ${cur} done` }), h('p', { class: 'banner-text', text: cur < eng.TOTAL_WEEKS ? `Next check-in on ${eng.formatDate(eng.weekEndDate(t.startDate, cur + 1))}.` : 'You finished all 13 weeks.' })),
@@ -520,7 +534,7 @@ export function timeline(view, productId) {
     h('div', { class: 'timeline-head' },
       weekRing(cur, doneWeeks, p.expectedChangeWeek, false),
       h('div', { class: 'timeline-head-copy' },
-        eyebrow(`YOU ARE IN WEEK ${cur} OF ${eng.TOTAL_WEEKS}`),
+        eyebrow(finished ? `13 WEEKS COMPLETE` : `YOU ARE IN WEEK ${cur} OF ${eng.TOTAL_WEEKS}`),
         h('h1', { class: 'title', text: p.name }),
         facts, milestone)),
     banner,
@@ -530,13 +544,14 @@ export function timeline(view, productId) {
     h('div', { class: 'month-grid' }, months)));
 
   if (!missingBase && !store.isDemo()) {
+    const here = location.hash;
     const d = store.load();
     if (!d.profile.calendarPrompted) {
       d.profile.calendarPrompted = true; store.save(d);
-      setTimeout(reminderSheet, 450);
-    } else if (!d.profile.homeScreenDismissed && !isStandalone()) {
+      setTimeout(() => { if (location.hash === here) reminderSheet(); }, 450);
+    } else if (!d.profile.homeScreenDismissed && !isStandalone() && d.checkins.some(c => c.week > 0)) {
       d.profile.homeScreenDismissed = true; store.save(d);
-      setTimeout(homeScreenSheet, 450);
+      setTimeout(() => { if (location.hash === here) homeScreenSheet(); }, 450);
     }
   }
 }
@@ -609,7 +624,7 @@ export function done(view, productId, weekStr) {
   const data = store.load();
   const p = P(productId);
   const week = parseInt(weekStr, 10);
-  if (!p) { ctx.go('#/timeline'); return; }
+  if (!p || !store.getCheckin(data, productId, week)) { ctx.go('#/timeline'); return; }
   const list = store.checkinsFor(data, productId);
   const status = eng.statusLine(p, list, week);
   const t = data.tracked.find(x => x.productId === productId);

@@ -1,5 +1,22 @@
 // Builds one .ics file with daily usage reminders and weekly check-in reminders.
-import { parseDate, today, TOTAL_WEEKS } from './engine.js';
+import { parseDate, today, daysSinceStart, TOTAL_WEEKS } from './engine.js?v=2';
+
+const DAY = 86400000;
+// Daily reminders run until the last product reaches the end of week 13.
+function dailyCount(tracked) {
+  const left = tracked.map(t => TOTAL_WEEKS * 7 - Math.max(0, daysSinceStart(t.startDate)));
+  return Math.max(0, ...left);
+}
+// Weekly reminders start at the next check-in still ahead, and stop after week 13.
+function weeklyPlan(t) {
+  const start = parseDate(t.startDate).getTime();
+  const now = today().getTime();
+  for (let w = 1; w <= TOTAL_WEEKS; w++) {
+    const day = new Date(start + (w * 7 - 1) * DAY);
+    if (day.getTime() >= now) return { first: day, count: TOTAL_WEEKS - w + 1 };
+  }
+  return null;
+}
 
 function esc(text) {
   return String(text).replace(/\\/g, '\\\\').replace(/;/g, '\\;').replace(/,/g, '\\,').replace(/\r?\n/g, '\\n');
@@ -19,13 +36,13 @@ export function buildIcs(products, tracked, reminderTime) {
   const lines = ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Steady//Progress Companion//EN', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH'];
   const names = tracked.map(t => (products.find(p => p.id === t.productId) || {}).short).filter(Boolean);
   const start = today();
-  lines.push(
+  if (dailyCount(tracked) > 0) lines.push(
     'BEGIN:VEVENT',
     `UID:steady-daily-${Date.now()}@steady`,
     `DTSTAMP:${utcStamp()}`,
     `DTSTART:${stamp(start, hh, mm)}`,
     'DURATION:PT10M',
-    `RRULE:FREQ=DAILY;COUNT=${TOTAL_WEEKS * 7}`,
+    `RRULE:FREQ=DAILY;COUNT=${dailyCount(tracked)}`,
     `SUMMARY:${esc('Steady: use your ' + names.join(', '))}`,
     `DESCRIPTION:${esc('Use each product as directed on its pack.')}`,
     'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${esc('Steady reminder')}`, 'TRIGGER:PT0M', 'END:VALARM',
@@ -33,15 +50,15 @@ export function buildIcs(products, tracked, reminderTime) {
   );
   tracked.forEach(t => {
     const p = products.find(x => x.id === t.productId);
-    if (!p) return;
-    const first = new Date(parseDate(t.startDate).getTime() + 6 * 86400000);
+    const plan = weeklyPlan(t);
+    if (!p || !plan) return;
     lines.push(
       'BEGIN:VEVENT',
       `UID:steady-week-${p.id}-${Date.now()}@steady`,
       `DTSTAMP:${utcStamp()}`,
-      `DTSTART:${stamp(first, hh, mm)}`,
+      `DTSTART:${stamp(plan.first, hh, mm)}`,
       'DURATION:PT10M',
-      `RRULE:FREQ=WEEKLY;COUNT=${TOTAL_WEEKS}`,
+      `RRULE:FREQ=WEEKLY;COUNT=${plan.count}`,
       `SUMMARY:${esc('Steady: weekly check-in for ' + p.short)}`,
       `DESCRIPTION:${esc('Open Steady and rate this week. It takes under a minute.')}`,
       'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${esc('Steady check-in')}`, 'TRIGGER:PT0M', 'END:VALARM',
@@ -88,19 +105,19 @@ function gLink(title, details, start, hh, mm, rrule) {
 export function googleLinks(products, tracked, reminderTime) {
   const [hh, mm] = (reminderTime || '21:00').split(':').map(Number);
   const names = tracked.map(t => (products.find(p => p.id === t.productId) || {}).short).filter(Boolean);
-  const links = [{
+  const links = dailyCount(tracked) > 0 ? [{
     label: 'Daily reminder',
     sub: names.join(', '),
-    url: gLink('Steady: use your ' + names.join(', '), 'Use each product as directed on its pack.', today(), hh, mm, `FREQ=DAILY;COUNT=${TOTAL_WEEKS * 7}`)
-  }];
+    url: gLink('Steady: use your ' + names.join(', '), 'Use each product as directed on its pack.', today(), hh, mm, `FREQ=DAILY;COUNT=${dailyCount(tracked)}`)
+  }] : [];
   tracked.forEach(t => {
     const p = products.find(x => x.id === t.productId);
-    if (!p) return;
-    const first = new Date(parseDate(t.startDate).getTime() + 6 * 86400000);
+    const plan = weeklyPlan(t);
+    if (!p || !plan) return;
     links.push({
       label: 'Weekly check-in',
       sub: p.short,
-      url: gLink('Steady: weekly check-in for ' + p.short, 'Open Steady and rate this week. It takes under a minute.', first, hh, mm, `FREQ=WEEKLY;COUNT=${TOTAL_WEEKS}`)
+      url: gLink('Steady: weekly check-in for ' + p.short, 'Open Steady and rate this week. It takes under a minute.', plan.first, hh, mm, `FREQ=WEEKLY;COUNT=${plan.count}`)
     });
   });
   return links;

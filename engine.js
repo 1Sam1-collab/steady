@@ -67,13 +67,18 @@ export function checkRules(product, checkins) {
   const real = checkins.filter(c => c.week > 0).sort((a, b) => a.week - b.week);
   const latest = real[real.length - 1];
   if (!latest) return { consult: false };
-  if (latest.redFlag) {
-    return { consult: true, kind: 'redflag', reason: 'You said yes to this week\'s warning-sign question. That is worth checking with a doctor rather than waiting.' };
+  // A "Yes" counts whether it was on the latest week or on the week saved most recently
+  // (for example, filling in a missed week or redoing an earlier one).
+  const lastSaved = real.reduce((a, c) => ((c.savedAt || 0) >= (a.savedAt || 0) ? c : a), real[0]);
+  if (latest.redFlag || lastSaved.redFlag) {
+    const flagged = latest.redFlag ? latest : lastSaved;
+    return { consult: true, kind: 'redflag', reason: `You said yes to the warning-sign question in your Week ${flagged.week} check-in. That is worth checking with a doctor rather than waiting.` };
   }
   const base = baselineOf(checkins);
   for (const rule of product.rules || []) {
     if (rule.type === 'improveBy' && base && latest.week >= rule.week) {
-      const anyBetter = rule.signs.some(s => (latest.ratings[s] || 0) > (base.ratings[s] || 0));
+      // Better than the start, or already at the best point of the scale, both count as fine.
+      const anyBetter = rule.signs.some(s => (latest.ratings[s] || 0) > (base.ratings[s] || 0) || (latest.ratings[s] || 0) >= 5);
       if (!anyBetter) return { consult: true, kind: 'milestone', reason: rule.reason };
     }
     if (rule.type === 'darkerTwice' && base && real.length >= 2) {

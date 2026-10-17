@@ -672,6 +672,10 @@ body:not(.is-landing) .consult-card .actions { justify-content: center; }
 .toast-title { margin: 0; font-weight: 600; font-size: 14px; }
 .toast-text { margin: 0; font-size: 13px; opacity: 0.85; }
 @media (min-width: 900px) { .toast { bottom: 28px; } }
+@media (max-width: 899px) {
+  .toast { bottom: auto; top: calc(12px + env(safe-area-inset-top, 0px)); transform: translate(-50%, -160%); }
+  .toast.is-on { transform: translate(-50%, 0); }
+}
 
 @media (prefers-reduced-motion: reduce) {
   body:not(.is-landing), .banner, .banner-pulse, .sheet, .sheet-overlay { animation: none !important; }
