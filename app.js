@@ -1,5 +1,5 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js?v=3';
+import * as screens from './screens.js?v=5';
 import * as store from './store.js';
 import * as eng from './engine.js';
 import * as demo from './demo.js';
@@ -38,6 +38,7 @@ function setNav(route) {
   });
   const hasData = store.load().tracked.length > 0;
   document.body.classList.toggle('no-nav', !hasData || ['welcome', 'pick', 'dates'].includes(route));
+  document.body.classList.toggle('is-landing', route === 'welcome');
 }
 
 function drawBanner() {

@@ -44,34 +44,95 @@ function isStandalone() {
 
 /* ---------- 1. Welcome ---------- */
 export function welcome(view) {
-  view.append(
-    h('section', { class: 'welcome' },
-      h('div', { class: 'welcome-copy' },
-        eyebrow('FOR BE BODYWISE CUSTOMERS'),
-        h('h1', { class: 'display', text: 'Week by week, see it working.' }),
-        h('p', { class: 'lede' },
-          'Know ', h('span', { class: 'inline-mark' }, icon('calendar', 'icon icon-inline')), ' what to expect each week, remember every dose, and see ',
-          h('span', { class: 'inline-mark' }, icon('eye', 'icon icon-inline')), ' your progress, for up to three products.'),
+  const startDemo = () => { demo.fill(8); ctx.refresh('#/timeline'); };
+  const steps = [
+    ['Pick your products', 'Up to three Be Bodywise products, wherever you bought them.'],
+    ['Set your start dates', 'Steady works out which week you are in, and sets your reminder time.'],
+    ['Rate Week 0', 'Three quick ratings about how things are today. This is your starting point.'],
+    ['Check in every week', 'Days used, three ratings, an optional photo and one warning-sign question. Under a minute.'],
+    ['Watch the trend', 'Your ratings become a line, read against what Be Bodywise says to expect each month.']
+  ];
+  const marqueeItems = ['Pick your products', 'Set start dates', 'Rate Week 0', 'Check in every week', 'Watch the trend', 'See a doctor if needed'];
+  const marqueeRow = () => h('div', { class: 'marquee-row' }, marqueeItems.map((t, i) => h('span', { class: 'marquee-item' }, h('sup', { text: String(i + 1) }), t, h('span', { class: 'marquee-arrow', 'aria-hidden': 'true', text: '/' }))));
+  const months = [
+    ['Month 1', 'Build the habit.', 'App note'],
+    ['Month 2', 'Baby hair starts to show.', 'Be Bodywise says'],
+    ['Month 3', 'Visible reduction in hair thinning.', 'Be Bodywise says']
+  ];
+  view.append(h('div', { class: 'landing' },
+    h('section', { class: 'hero' },
+      h('div', { class: 'hero-copy' },
+        h('p', { class: 'hero-eyebrow', text: 'FOR BE BODYWISE CUSTOMERS' }),
+        h('h1', { class: 'hero-title' }, h('span', { text: 'Week by week,' }), h('span', { text: 'see it working.' })),
+        h('p', { class: 'hero-lede', text: 'Know what to expect, remember every dose, and see your progress, for up to three products.' }),
         h('div', { class: 'actions' },
-          h('a', { class: 'btn btn-primary', href: '#/pick', text: 'Start' }),
-          h('button', { class: 'btn btn-quiet', type: 'button', text: 'Preview with sample data', onclick: () => { demo.fill(8); ctx.refresh('#/timeline'); } })),
-        h('p', { class: 'fine', text: 'No sign-up. Your answers stay on this device.' })),
-      h('div', { class: 'welcome-visual', 'aria-hidden': 'true' }, phoneStage())));
-  const sec = view.querySelector('.welcome');
+          h('a', { class: 'btn btn-cream', href: '#/pick', text: 'Start' }),
+          h('button', { class: 'btn btn-ghost', type: 'button', text: 'Preview with sample data', onclick: startDemo })),
+        h('p', { class: 'hero-fine', text: 'No sign-up. Your answers stay on this device.' })),
+      h('div', { class: 'hero-visual', 'aria-hidden': 'true' }, phoneStage(true))),
+    h('div', { class: 'marquee', 'aria-label': 'How Steady works: ' + marqueeItems.join(', ') }, h('div', { class: 'marquee-track', 'aria-hidden': 'true' }, marqueeRow(), marqueeRow())),
+    h('section', { class: 'journey' },
+      h('p', { class: 'eyebrow', text: 'YOUR PATH THROUGH STEADY' }),
+      h('h2', { class: 'section-title', text: 'Thirteen weeks, one simple path.' }),
+      h('ol', { class: 'path' },
+        h('span', { class: 'path-line', 'aria-hidden': 'true' }, h('span', { class: 'path-fill' })),
+        steps.map(([t, d], i) => h('li', { class: 'path-step' },
+          h('span', { class: 'path-node', text: String(i + 1) }),
+          h('div', { class: 'path-copy' }, h('h3', { text: t }), h('p', { text: d })))),
+        h('li', { class: 'path-step path-fork' },
+          h('span', { class: 'path-node', text: '6' }),
+          h('div', { class: 'path-copy' },
+            h('h3', { text: 'Then one of two things' }),
+            h('div', { class: 'fork' },
+              h('div', { class: 'fork-branch is-good' }, h('p', { class: 'fork-label', text: 'ON TRACK' }), h('p', { text: 'Keep going. Each check-in tells you how far the next milestone is.' })),
+              h('div', { class: 'fork-branch is-alert' }, h('p', { class: 'fork-label', text: 'WARNING SIGN OR NO CHANGE BY WEEK 13' }), h('p', { text: 'Steady suggests a Be Bodywise doctor, with one tap.' }))))))),
+    h('section', { class: 'months' },
+      h('p', { class: 'eyebrow', text: 'EXAMPLE: ADVANCED HAIR GROWTH SERUM' }),
+      months.map(([m, t, src]) => h('div', { class: 'month-band' },
+        h('p', { class: 'month-word', text: m }),
+        h('div', null, h('p', { class: 'month-src', text: src }), h('p', { class: 'month-line', text: t }))))),
+    h('section', { class: 'products-strip' },
+      h('p', { class: 'eyebrow', text: 'WORKS WITH' }),
+      h('ul', { class: 'product-names' }, ctx.products.map(p => h('li', null, icon(p.icon, 'icon'), h('span', { text: p.name }))))),
+    h('section', { class: 'closer' },
+      h('h2', { class: 'closer-title', text: 'Stays on your phone.' }),
+      h('p', { class: 'hero-lede', text: 'No account, no uploads, no tracking. Delete everything with one tap.' }),
+      h('div', { class: 'actions' },
+        h('a', { class: 'btn btn-primary', href: '#/pick', text: 'Start' }),
+        h('button', { class: 'btn btn-quiet', type: 'button', text: 'Preview with sample data', onclick: startDemo })))));
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const stage = view.querySelector('.stage-inner');
-  if (sec && stage && window.matchMedia('(pointer: fine)').matches && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
-    sec.addEventListener('pointermove', e => {
-      const r = sec.getBoundingClientRect();
-      const x = (e.clientX - r.left) / r.width - 0.5;
-      const y = (e.clientY - r.top) / r.height - 0.5;
-      stage.style.setProperty('--ry', `${(x * 14).toFixed(2)}deg`);
-      stage.style.setProperty('--rx', `${(-y * 10).toFixed(2)}deg`);
+  const hero = view.querySelector('.hero');
+  const path = view.querySelector('.path');
+  const fill = view.querySelector('.path-fill');
+  const stepsEls = [...view.querySelectorAll('.path-step')];
+  const onScroll = () => {
+    if (!document.body.contains(path)) { window.removeEventListener('scroll', onScroll); return; }
+    const r = path.getBoundingClientRect();
+    const vh = window.innerHeight;
+    const p = Math.max(0, Math.min(1, (vh * 0.7 - r.top) / r.height));
+    fill.style.transform = `scaleY(${p.toFixed(3)})`;
+    stepsEls.forEach(el => el.classList.toggle('is-reached', el.getBoundingClientRect().top < vh * 0.7));
+    if (stage && !reduce) {
+      const hr = hero.getBoundingClientRect();
+      const t = Math.max(0, Math.min(1, -hr.top / Math.max(1, hr.height)));
+      stage.style.setProperty('--scroll', t.toFixed(3));
+    }
+  };
+  window.addEventListener('scroll', onScroll, { passive: true });
+  onScroll();
+  if (hero && stage && !reduce && window.matchMedia('(pointer: fine)').matches) {
+    hero.addEventListener('pointermove', e => {
+      const r = hero.getBoundingClientRect();
+      stage.style.setProperty('--ry', `${(((e.clientX - r.left) / r.width - 0.5) * 18).toFixed(2)}deg`);
+      stage.style.setProperty('--rx', `${(-((e.clientY - r.top) / r.height - 0.5) * 12).toFixed(2)}deg`);
     });
-    sec.addEventListener('pointerleave', () => { stage.style.setProperty('--ry', '0deg'); stage.style.setProperty('--rx', '0deg'); });
+    hero.addEventListener('pointerleave', () => { stage.style.setProperty('--ry', '0deg'); stage.style.setProperty('--rx', '0deg'); });
   }
 }
 
-function phoneStage() {
+function phoneStage(single) {
   const screenTimeline = h('div', { class: 'ph-screen' },
     h('p', { class: 'ph-eyebrow', text: 'WEEK 7 OF 13' }),
     h('p', { class: 'ph-title', text: 'Hair serum' }),
@@ -101,6 +162,7 @@ function phoneStage() {
     h('p', { class: 'ph-text', text: '"A lot" when you started, "Some" now.' }),
     h('p', { class: 'ph-type', text: 'You\'re on track.' }));
   const phone = (cls, inner) => h('div', { class: 'phone-slot ' + cls }, h('div', { class: 'phone-bob' }, h('div', { class: 'phone' }, h('span', { class: 'phone-notch' }), inner)));
+  if (single) return h('div', { class: 'stage is-single' }, h('div', { class: 'stage-inner' }, phone('is-center', screenTimeline)));
   return h('div', { class: 'stage' }, h('div', { class: 'stage-inner' },
     phone('is-left', screenCheck), phone('is-center', screenTimeline), phone('is-right', screenProgress)));
 }
