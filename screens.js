@@ -3,8 +3,9 @@ import { h, s, icon } from './dom.js';
 import * as store from './store.js';
 import * as eng from './engine.js';
 import * as photos from './photos.js';
-import * as cal from './calendar.js';
+import * as cal from './calendar.js?v=7';
 import * as demo from './demo.js';
+import * as ui from './ui.js?v=7';
 
 const MAX_PRODUCTS = 3;
 const TYPE_LABEL = { brand: 'Be Bodywise says', app: 'App note', next: 'Next milestone', check: 'Steady check' };
@@ -369,10 +370,14 @@ export function checkin(view, productId, weekStr) {
     if (!saved) { err.textContent = 'This device is out of storage space, so the check-in couldn\'t be saved.'; next.disabled = false; next.textContent = 'Try again'; return; }
     if (week === 0) {
       const nextBase = saved.tracked.find(x => !store.getCheckin(saved, x.productId, 0));
+      ui.toast('Starting point saved', 'Every later week is compared with this.');
       ctx.go(nextBase ? `#/checkin/${nextBase.productId}/0` : '#/timeline');
       return;
     }
-    const rule = eng.checkRules(p, store.checkinsFor(saved, productId));
+    const all = store.checkinsFor(saved, productId);
+    const streak = streakOf(all, week);
+    ui.toast(`Week ${week} saved`, streak > 1 ? `${streak} weeks in a row. Keep it going.` : 'Your rating is on the timeline.');
+    const rule = eng.checkRules(p, all);
     ctx.go(rule.consult ? `#/consult/${productId}/${week}` : `#/done/${productId}/${week}`);
   });
   back.addEventListener('click', () => { if (i > 0) { i--; draw(); } });
@@ -401,6 +406,66 @@ function scale(sign, value, onPick) {
     h('p', { class: 'scale-chosen', 'aria-live': 'polite', text: value ? sign.anchors[value - 1] : 'Tap a point on the scale' }));
 }
 
+
+/* ---------- Shared: reminders pop-up, home-screen pop-up, week ring ---------- */
+export function reminderSheet() {
+  const d = store.load();
+  if (!d.tracked.length) return;
+  const ios = /iPhone|iPad|iPod|Macintosh/i.test(navigator.userAgent || '');
+  const links = cal.googleLinks(ctx.products, d.tracked, d.profile.reminderTime);
+  const msg = h('p', { class: 'fine', 'aria-live': 'polite' });
+  const icsBtn = h('button', { class: 'sheet-option', type: 'button' },
+    icon('calendar', 'icon'), h('span', null, h('strong', { text: ios ? 'Apple Calendar' : 'Apple or Outlook calendar' }), h('small', { text: 'All reminders in one file. Open it, then tap Add All.' })));
+  icsBtn.addEventListener('click', () => {
+    cal.download(cal.buildIcs(ctx.products, d.tracked, d.profile.reminderTime));
+    msg.textContent = 'Downloaded. Open the file and your calendar asks to add the reminders.';
+  });
+  const gl = links.map(l => h('a', { class: 'sheet-option', href: l.url, target: '_blank', rel: 'noopener noreferrer' },
+    icon('calendar', 'icon'), h('span', null, h('strong', { text: `Google Calendar: ${l.label}` }), h('small', { text: `${l.sub}, at ${d.profile.reminderTime}. Opens Google Calendar, tap Save.` }))));
+  ui.showModal({
+    eyebrow: 'REMINDERS',
+    title: 'Put your reminders in your calendar',
+    body: [h('p', { class: 'lede', text: 'Pick your calendar. Each reminder repeats for 13 weeks, so you never have to remember.' }),
+      h('div', { class: 'sheet-options' }, ios ? [icsBtn, ...gl] : [...gl, icsBtn]), msg],
+    actions: [h('button', { class: 'btn btn-quiet', type: 'button', text: 'Not now', onclick: ui.closeModal })]
+  });
+}
+
+function homeScreenSheet() {
+  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+  ui.showModal({
+    eyebrow: 'KEEP YOUR HISTORY SAFE',
+    title: 'Add Steady to your home screen',
+    body: [h('p', { class: 'lede', text: ios
+      ? 'On iPhone, Safari can clear saved data after 7 days without a visit. Tap Share, then Add to Home Screen, and Steady keeps your check-ins.'
+      : 'Open your browser menu and tap Add to Home screen or Install app. Steady then opens like an app.' })],
+    actions: [h('button', { class: 'btn btn-primary', type: 'button', text: 'Got it', onclick: ui.closeModal })]
+  });
+}
+
+function weekRing(cur, doneWeeks, milestone, big) {
+  const N = eng.TOTAL_WEEKS, R = 46, C = 60, gap = 5;
+  const seg = 360 / N;
+  const pt = a => [C + R * Math.cos((a - 90) * Math.PI / 180), C + R * Math.sin((a - 90) * Math.PI / 180)];
+  const arcs = [];
+  for (let w = 1; w <= N; w++) {
+    const a0 = (w - 1) * seg + gap / 2, a1 = w * seg - gap / 2;
+    const [x0, y0] = pt(a0), [x1, y1] = pt(a1);
+    const cls = 'ring-seg' + (doneWeeks.has(w) ? ' is-done' : '') + (w === cur ? ' is-current' : '') + (w === milestone ? ' is-milestone' : '');
+    arcs.push(s('path', { d: `M${x0.toFixed(2)} ${y0.toFixed(2)} A${R} ${R} 0 0 1 ${x1.toFixed(2)} ${y1.toFixed(2)}`, class: cls }));
+  }
+  return h('div', { class: 'ring' + (big ? ' is-big' : '') },
+    s('svg', { viewBox: '0 0 120 120', role: 'img', 'aria-label': `Week ${cur} of ${N}, ${doneWeeks.size} check-ins done` }, arcs),
+    h('div', { class: 'ring-label' }, h('span', { class: 'ring-num', text: String(cur) }), h('span', { class: 'ring-of', text: `of ${N} weeks` })));
+}
+
+function streakOf(list, week) {
+  const weeks = new Set(list.map(c => c.week));
+  let n = 0;
+  for (let w = week; w >= 1 && weeks.has(w); w--) n++;
+  return n;
+}
+
 /* ---------- 5. Timeline ---------- */
 export function timeline(view, productId) {
   const data = store.load();
@@ -413,25 +478,49 @@ export function timeline(view, productId) {
   const rule = eng.checkRules(p, list);
   const expDate = p.expectedChangeWeek ? eng.formatDate(eng.weekEndDate(t.startDate, p.expectedChangeWeek)) : null;
 
-  const facts = h('dl', { class: 'facts' },
-    h('div', null, h('dt', { text: 'Product' }), h('dd', { text: p.name })),
-    h('div', null, h('dt', { text: 'Concern' }), h('dd', { text: p.concern })),
-    h('div', null, h('dt', { text: 'Results expected by' }), h('dd', { text: p.expectedChangeWeek ? `Week ${p.expectedChangeWeek}, around ${expDate}` : 'No timeline promised by Be Bodywise' })));
+  const facts = h('ul', { class: 'fact-pills' },
+    h('li', null, h('span', { text: 'Concern' }), p.concern),
+    h('li', null, h('span', { text: 'Results expected' }), p.expectedChangeWeek ? `Week ${p.expectedChangeWeek}, around ${expDate}` : 'No timeline promised'));
+  const doneWeeks = new Set(list.filter(c => c.week > 0).map(c => c.week));
+  const dueNow = !missingBase && !doneWeeks.has(cur);
+  const left = p.expectedChangeWeek ? p.expectedChangeWeek - cur : null;
+  const banner = missingBase ? null : dueNow
+    ? h('div', { class: 'banner is-due' }, h('span', { class: 'banner-pulse', 'aria-hidden': 'true' }),
+        h('div', null, h('p', { class: 'banner-title', text: `Your week ${cur} check-in is ready` }), h('p', { class: 'banner-text', text: 'Three ratings and one question. Under a minute.' })),
+        h('a', { class: 'btn btn-primary', href: `#/checkin/${p.id}/${cur}`, text: 'Check in' }))
+    : h('div', { class: 'banner' },
+        h('div', null, h('p', { class: 'banner-title', text: `Week ${cur} done` }), h('p', { class: 'banner-text', text: cur < eng.TOTAL_WEEKS ? `Next check-in on ${eng.formatDate(eng.weekEndDate(t.startDate, cur + 1))}.` : 'You finished all 13 weeks.' })),
+        h('a', { class: 'btn btn-outline', href: `#/progress/${p.id}`, text: 'See progress' }));
+  const milestone = left !== null && left > 0
+    ? h('p', { class: 'milestone-note' }, h('strong', { text: `${left} week${left === 1 ? '' : 's'}` }), ` to Be Bodywise's main milestone for your ${p.short.toLowerCase()}.`)
+    : null;
 
   const months = p.months.map(m => monthCard(p, t, list, m, cur));
 
   view.append(h('section', { class: 'screen wide' },
     tabs(data, p.id, 'timeline'),
     h('div', { class: 'timeline-head' },
-      h('div', null,
+      weekRing(cur, doneWeeks, p.expectedChangeWeek, false),
+      h('div', { class: 'timeline-head-copy' },
         eyebrow(`YOU ARE IN WEEK ${cur} OF ${eng.TOTAL_WEEKS}`),
-        h('h1', { class: 'title', text: p.short.charAt(0).toUpperCase() + p.short.slice(1) })),
-      facts),
+        h('h1', { class: 'title', text: p.name }),
+        facts, milestone)),
+    banner,
     missingBase ? h('div', { class: 'callout' }, h('p', { text: 'Set your starting point first, so later weeks have something to compare with.' }), h('a', { class: 'btn btn-primary', href: `#/checkin/${missingBase.productId}/0`, text: 'Rate Week 0' })) : null,
     rule.consult ? h('div', { class: 'callout callout-consult' }, h('p', { text: rule.reason }), h('a', { class: 'btn btn-outline-accent', href: `#/consult/${p.id}/${cur}`, text: 'See what to do' })) : null,
-    homeScreenCard(data),
     p.note ? h('p', { class: 'note', text: p.note }) : null,
     h('div', { class: 'month-grid' }, months)));
+
+  if (!missingBase && !store.isDemo()) {
+    const d = store.load();
+    if (!d.profile.calendarPrompted) {
+      d.profile.calendarPrompted = true; store.save(d);
+      setTimeout(reminderSheet, 450);
+    } else if (!d.profile.homeScreenDismissed && !isStandalone()) {
+      d.profile.homeScreenDismissed = true; store.save(d);
+      setTimeout(homeScreenSheet, 450);
+    }
+  }
 }
 
 function monthCard(p, t, list, m, cur) {
@@ -509,7 +598,9 @@ export function done(view, productId, weekStr) {
   const nextDue = week < eng.TOTAL_WEEKS && t ? eng.formatDate(eng.weekEndDate(t.startDate, week + 1)) : null;
   const others = data.tracked.filter(x => x.productId !== productId && !store.getCheckin(data, x.productId, eng.currentWeek(x.startDate)));
   const nextP = others.length ? P(others[0].productId) : null;
+  const doneWeeks = new Set(list.filter(c => c.week > 0).map(c => c.week));
   view.append(h('section', { class: 'screen done' },
+    weekRing(week, doneWeeks, p.expectedChangeWeek, true),
     eyebrow(`WEEK ${week} DONE`),
     h('h1', { class: 'display', text: eng.summaryLine(p, list, week) }),
     h('p', { class: 'lede', text: status.text }),
@@ -599,8 +690,7 @@ export function settings(view) {
     const d = store.load();
     d.profile.reminderTime = time.value || '21:00';
     store.save(d);
-    cal.download(cal.buildIcs(ctx.products, d.tracked, d.profile.reminderTime));
-    msg.textContent = 'Downloaded. Open the file to add the reminders. On Android, choose your Calendar app if asked.';
+    reminderSheet();
   };
   let confirmDelete = false;
   const delBtn = h('button', { class: 'btn btn-danger', type: 'button', text: 'Delete all my data' });

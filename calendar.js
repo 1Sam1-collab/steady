@@ -63,3 +63,45 @@ export function download(icsText) {
   a.remove();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }
+
+// Google Calendar links: each opens a ready-to-save repeating event.
+function gStamp(date, hh, mm) {
+  const p = n => String(n).padStart(2, '0');
+  return `${date.getFullYear()}${p(date.getMonth() + 1)}${p(date.getDate())}T${p(hh)}${p(mm)}00`;
+}
+
+function gLink(title, details, start, hh, mm, rrule) {
+  const end = new Date(start.getTime());
+  const endM = mm + 10;
+  const tz = (Intl.DateTimeFormat().resolvedOptions().timeZone) || 'Asia/Kolkata';
+  const q = new URLSearchParams({
+    action: 'TEMPLATE',
+    text: title,
+    details,
+    dates: `${gStamp(start, hh, mm)}/${gStamp(end, hh + Math.floor(endM / 60), endM % 60)}`,
+    ctz: tz,
+    recur: `RRULE:${rrule}`
+  });
+  return `https://calendar.google.com/calendar/render?${q.toString()}`;
+}
+
+export function googleLinks(products, tracked, reminderTime) {
+  const [hh, mm] = (reminderTime || '21:00').split(':').map(Number);
+  const names = tracked.map(t => (products.find(p => p.id === t.productId) || {}).short).filter(Boolean);
+  const links = [{
+    label: 'Daily reminder',
+    sub: names.join(', '),
+    url: gLink('Steady: use your ' + names.join(', '), 'Use each product as directed on its pack.', today(), hh, mm, `FREQ=DAILY;COUNT=${TOTAL_WEEKS * 7}`)
+  }];
+  tracked.forEach(t => {
+    const p = products.find(x => x.id === t.productId);
+    if (!p) return;
+    const first = new Date(parseDate(t.startDate).getTime() + 6 * 86400000);
+    links.push({
+      label: 'Weekly check-in',
+      sub: p.short,
+      url: gLink('Steady: weekly check-in for ' + p.short, 'Open Steady and rate this week. It takes under a minute.', first, hh, mm, `FREQ=WEEKLY;COUNT=${TOTAL_WEEKS}`)
+    });
+  });
+  return links;
+}
