@@ -1,7 +1,7 @@
 // Draws each screen from the product file and saved data.
 import { h, s, icon } from './dom.js';
 import * as store from './store.js';
-import * as eng from './engine.js?v=2';
+import * as eng from './engine.js?v=3';
 import * as photos from './photos.js';
 import * as cal from './calendar.js?v=8';
 import * as demo from './demo.js';
@@ -288,7 +288,7 @@ export function dates(view) {
     }
     if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(() => {});
     ctx.draft.selected = null;
-    const needBaseline = tracked.find(t => !store.getCheckin(d, t.productId, 0));
+    const needBaseline = tracked.find(t => !d.checkins.some(c => c.productId === t.productId));
     ctx.go(needBaseline ? `#/checkin/${needBaseline.productId}/0` : '#/timeline');
   };
   view.append(h('section', { class: 'screen' },
@@ -391,7 +391,7 @@ export function checkin(view, productId, weekStr) {
     const saved = store.saveCheckin(answer);
     if (!saved) { err.textContent = 'This device is out of storage space, so the check-in couldn\'t be saved.'; next.disabled = false; next.textContent = 'Try again'; return; }
     if (week === 0) {
-      const nextBase = saved.tracked.find(x => !store.getCheckin(saved, x.productId, 0));
+      const nextBase = saved.tracked.find(x => !saved.checkins.some(c => c.productId === x.productId));
       ui.toast('Starting point saved', 'Every later week is compared with this.');
       ctx.go(nextBase ? `#/checkin/${nextBase.productId}/0` : '#/timeline');
       return;
@@ -498,8 +498,8 @@ export function timeline(view, productId) {
   if (!data.tracked.length) { ctx.go('#/welcome'); return; }
   const t = data.tracked.find(x => x.productId === productId) || data.tracked[0];
   const p = P(t.productId);
-  const missingBase = data.tracked.find(x => !store.getCheckin(data, x.productId, 0));
   const list = store.checkinsFor(data, p.id);
+  const missingBase = list.length ? null : t;
   const cur = weekNow(data, t);
   const rule = eng.checkRules(p, list);
   const expDate = p.expectedChangeWeek ? eng.formatDate(eng.weekEndDate(t.startDate, p.expectedChangeWeek)) : null;
@@ -583,7 +583,7 @@ function weekChip(p, list, w, cur) {
 
 function homeScreenCard(data) {
   if (data.profile.homeScreenDismissed || isStandalone() || store.isDemo()) return null;
-  if (!data.checkins.some(c => c.week === 0)) return null;
+  if (!data.checkins.length) return null;
   const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
   const card = h('div', { class: 'callout' },
     h('p', { class: 'callout-title', text: 'Keep your history safe' }),

@@ -58,8 +58,12 @@ export function trend(checkins, signId) {
     .map(c => ({ week: c.week, value: c.ratings[signId] }));
 }
 
+// The starting point: Week 0 if she rated it, otherwise her earliest check-in.
 function baselineOf(checkins) {
-  return checkins.find(c => c.week === 0) || null;
+  const zero = checkins.find(c => c.week === 0);
+  if (zero) return zero;
+  const sorted = checkins.filter(c => c.ratings).slice().sort((a, b) => a.week - b.week);
+  return sorted[0] || null;
 }
 
 // Returns { consult: bool, reason, kind } for the latest check-in.
@@ -74,7 +78,8 @@ export function checkRules(product, checkins) {
     const flagged = latest.redFlag ? latest : lastSaved;
     return { consult: true, kind: 'redflag', reason: `You said yes to the warning-sign question in your Week ${flagged.week} check-in. That is worth checking with a doctor rather than waiting.` };
   }
-  const base = baselineOf(checkins);
+  const b0 = baselineOf(checkins);
+  const base = b0 && b0 !== latest ? b0 : null;
   for (const rule of product.rules || []) {
     if (rule.type === 'improveBy' && base && latest.week >= rule.week) {
       // Better than the start, or already at the best point of the scale, both count as fine.
@@ -100,8 +105,9 @@ export function checkRules(product, checkins) {
 // One plain sentence about the main sign for the done screen.
 export function summaryLine(product, checkins, week) {
   const sign = product.signs.find(s => s.id === product.mainSign);
-  const base = baselineOf(checkins);
   const now = checkins.find(c => c.week === week);
+  const b0 = baselineOf(checkins);
+  const base = b0 && b0 !== now ? b0 : null;
   if (!sign || !now) return '';
   const word = v => sign.anchors[v - 1] || '';
   if (!base) return `${sign.label}: "${word(now.ratings[sign.id])}" this week.`;
