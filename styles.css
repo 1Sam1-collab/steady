@@ -689,7 +689,7 @@ body:not(.is-landing) .consult-card .actions { justify-content: center; }
 /* Add to home screen button: header on phones, side menu on laptops. Hidden on the home page. */
 .a2hs { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--blue); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
 .a2hs .icon { width: 18px; height: 18px; flex: 0 0 auto; }
-.a2hs[hidden] { display: none !important; }
+.a2hs[hidden], body:not(.is-landing) .a2hs { display: none !important; }
 body.is-landing .a2hs-side { display: none; }
 .a2hs-short { display: none; }
 .a2hs-top { margin-left: auto; }

@@ -130,7 +130,7 @@ function render() {
   window.scrollTo(0, 0);
 }
 
-// "Add to home screen" button in the header (phone) and side menu (laptop).
+// "Add to home screen" button in the home page header only.
 let installPrompt = null;
 const a2hsButtons = [];
 function setupAddToHome() {
@@ -151,8 +151,6 @@ function setupAddToHome() {
   const topbar = document.querySelector('.topbar');
   const cta = document.querySelector('.topbar-cta');
   if (topbar) topbar.insertBefore(make('a2hs-top'), cta || null);
-  const note = document.querySelector('.sidenav-note');
-  if (note) note.before(make('a2hs-side'));
   const hide = () => a2hsButtons.forEach(b => { b.hidden = true; });
   if (screens.isStandalone()) hide();
   window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; });
