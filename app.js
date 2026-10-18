@@ -1,9 +1,9 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js?v=14';
+import * as screens from './screens.js?v=15';
 import * as store from './store.js';
 import * as eng from './engine.js?v=3';
 import * as demo from './demo.js';
-import { h } from './dom.js';
+import { h, icon } from './dom.js?v=2';
 import { closeModal } from './ui.js?v=8';
 
 const view = document.getElementById('view');
@@ -130,6 +130,35 @@ function render() {
   window.scrollTo(0, 0);
 }
 
+// "Add to home screen" button in the header (phone) and side menu (laptop).
+let installPrompt = null;
+const a2hsButtons = [];
+function setupAddToHome() {
+  const make = cls => {
+    const b = h('button', { class: 'a2hs ' + cls, type: 'button' }, icon('addhome', 'icon'), h('span', { text: 'Add to home screen' }));
+    b.addEventListener('click', async () => {
+      if (installPrompt) {
+        installPrompt.prompt();
+        try { await installPrompt.userChoice; } catch (e) { /* ignore */ }
+        installPrompt = null;
+      } else {
+        screens.homeScreenSheet();
+      }
+    });
+    a2hsButtons.push(b);
+    return b;
+  };
+  const topbar = document.querySelector('.topbar');
+  const cta = document.querySelector('.topbar-cta');
+  if (topbar) topbar.insertBefore(make('a2hs-top'), cta || null);
+  const note = document.querySelector('.sidenav-note');
+  if (note) note.before(make('a2hs-side'));
+  const hide = () => a2hsButtons.forEach(b => { b.hidden = true; });
+  if (screens.isStandalone()) hide();
+  window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); installPrompt = e; });
+  window.addEventListener('appinstalled', () => { installPrompt = null; hide(); });
+}
+
 async function start() {
   try {
     const res = await fetch('products.json', { cache: 'no-cache' });
@@ -140,6 +169,7 @@ async function start() {
     return;
   }
   screens.init({ products, draft, go, refresh });
+  setupAddToHome();
   window.addEventListener('hashchange', render);
   render();
 }

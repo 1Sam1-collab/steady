@@ -685,3 +685,11 @@ body:not(.is-landing) .consult-card .actions { justify-content: center; }
 .done .chart-card { max-width: 560px; }
 .bottomnav { grid-template-columns: repeat(5, 1fr); }
 .bottomnav a { font-size: 12.5px; }
+
+/* Add to home screen button: header on phones, side menu on laptops. Hidden on the home page. */
+.a2hs { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--blue); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
+.a2hs .icon { width: 18px; height: 18px; flex: 0 0 auto; }
+.a2hs[hidden], body.is-landing .a2hs { display: none; }
+.a2hs { white-space: nowrap; }
+.a2hs-side { width: 100%; justify-content: flex-start; gap: 8px; padding: 0 10px; font-size: 13px; text-align: left; }
+.a2hs:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }

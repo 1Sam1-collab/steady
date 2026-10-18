@@ -1,5 +1,5 @@
 // Draws each screen from the product file and saved data.
-import { h, s, icon } from './dom.js';
+import { h, s, icon } from './dom.js?v=2';
 import * as store from './store.js';
 import * as eng from './engine.js?v=3';
 import * as photos from './photos.js';
@@ -38,7 +38,7 @@ function consultLink() {
   return CONSULT_URL;
 }
 
-function isStandalone() {
+export function isStandalone() {
   return window.matchMedia && window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 }
 
@@ -457,7 +457,7 @@ export function reminderSheet() {
   });
 }
 
-function homeScreenSheet() {
+export function homeScreenSheet() {
   const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
   ui.showModal({
     eyebrow: 'KEEP YOUR HISTORY SAFE',
