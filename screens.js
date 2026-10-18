@@ -457,15 +457,34 @@ export function reminderSheet() {
   });
 }
 
-export function homeScreenSheet() {
-  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+// install: a function that opens the browser's own install prompt, when the browser offers one.
+export function homeScreenSheet(install) {
+  const ua = navigator.userAgent || '';
+  const ios = /iPhone|iPad|iPod/i.test(ua);
+  const android = /Android/i.test(ua);
+  const steps = ios
+    ? ['Tap the Share button at the bottom of Safari.', 'Scroll down and tap Add to Home Screen.', 'Tap Add. Steady appears on your home screen.']
+    : android
+      ? ['Tap the three-dot menu at the top right of Chrome.', 'Tap Add to Home screen (or Install app).', 'Tap Install or Add. Steady appears on your home screen.']
+      : ['Open your browser menu.', 'Choose Install Steady, or Add to Home screen.', 'Steady then opens like an app.'];
+  const msg = h('p', { class: 'fine', 'aria-live': 'polite' });
+  const actions = [];
+  if (install) {
+    actions.push(h('button', { class: 'btn btn-primary', type: 'button', text: 'Install Steady', onclick: async () => {
+      try { await install(); ui.closeModal(); }
+      catch (e) { msg.textContent = 'Your browser did not open its install prompt. Follow the steps above instead.'; }
+    } }));
+  }
+  actions.push(h('button', { class: install ? 'btn btn-quiet' : 'btn btn-primary', type: 'button', text: install ? 'Not now' : 'Got it', onclick: ui.closeModal }));
   ui.showModal({
     eyebrow: 'KEEP YOUR HISTORY SAFE',
     title: 'Add Steady to your home screen',
-    body: [h('p', { class: 'lede', text: ios
-      ? 'On iPhone, Safari can clear saved data after 7 days without a visit. Tap Share, then Add to Home Screen, and Steady keeps your check-ins.'
-      : 'Open your browser menu and tap Add to Home screen or Install app. Steady then opens like an app.' })],
-    actions: [h('button', { class: 'btn btn-primary', type: 'button', text: 'Got it', onclick: ui.closeModal })]
+    body: [
+      h('p', { class: 'lede', text: install ? 'Tap Install Steady below, or add it yourself:' : 'Steady then opens like an app, and your check-ins stay safe.' }),
+      h('ol', { class: 'steps-list' }, steps.map(t => h('li', { text: t }))),
+      ios ? h('p', { class: 'fine', text: 'On iPhone, Safari can clear saved data after 7 days without a visit. Adding Steady to your home screen keeps your check-ins.' }) : null,
+      msg],
+    actions
   });
 }
 

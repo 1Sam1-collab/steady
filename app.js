@@ -1,5 +1,5 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js?v=15';
+import * as screens from './screens.js?v=16';
 import * as store from './store.js';
 import * as eng from './engine.js?v=3';
 import * as demo from './demo.js';
@@ -136,14 +136,14 @@ const a2hsButtons = [];
 function setupAddToHome() {
   const make = cls => {
     const b = h('button', { class: 'a2hs ' + cls, type: 'button', 'aria-label': 'Add to home screen' }, icon('addhome', 'icon'), h('span', { class: 'a2hs-full', text: 'Add to home screen' }), h('span', { class: 'a2hs-short', text: 'Add to home' }));
-    b.addEventListener('click', async () => {
-      if (installPrompt) {
-        installPrompt.prompt();
-        try { await installPrompt.userChoice; } catch (e) { /* ignore */ }
+    // Always open Steady's own steps first, so a tap never does nothing.
+    b.addEventListener('click', () => {
+      const ev = installPrompt;
+      screens.homeScreenSheet(ev ? async () => {
         installPrompt = null;
-      } else {
-        screens.homeScreenSheet();
-      }
+        await ev.prompt();
+        await ev.userChoice;
+      } : null);
     });
     a2hsButtons.push(b);
     return b;

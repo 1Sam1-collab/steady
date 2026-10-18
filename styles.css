@@ -703,3 +703,6 @@ body.is-landing .a2hs-top .icon, .a2hs .icon { color: inherit; }
 .a2hs { white-space: nowrap; }
 .a2hs-side { width: 100%; justify-content: flex-start; gap: 8px; padding: 0 10px; font-size: 13px; text-align: left; }
 .a2hs:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
+
+.steps-list { margin: 8px 0 12px; padding-left: 22px; display: grid; gap: 8px; }
+.steps-list li { padding-left: 4px; }
