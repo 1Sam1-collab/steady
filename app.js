@@ -1,14 +1,12 @@
 // Starts the app and switches between screens.
-import * as screens from './screens.js?v=16';
-import * as store from './store.js';
-import * as eng from './engine.js?v=3';
-import * as demo from './demo.js';
-import { h, icon } from './dom.js?v=2';
-import { closeModal } from './ui.js?v=8';
+import * as screens from './screens.js?v=20';
+import * as store from './store.js?v=20';
+import * as eng from './engine.js?v=20';
+import { h, icon } from './dom.js?v=20';
+import { closeModal } from './ui.js?v=20';
 
 const view = document.getElementById('view');
-const banner = document.getElementById('banner');
-const backbar = document.getElementById('backbar') || (() => { const d = document.createElement('div'); d.id = 'backbar'; d.className = 'backbar'; banner.after(d); return d; })();
+const backbar = document.getElementById('backbar') || (() => { const d = document.createElement('div'); d.id = 'backbar'; d.className = 'backbar'; view.before(d); return d; })();
 const draft = {};
 let products = [];
 
@@ -43,21 +41,6 @@ function setNav(route) {
   if (cta) { cta.textContent = hasData ? 'My plan' : 'Start'; cta.setAttribute('href', hasData ? '#/timeline' : '#/pick'); }
   document.body.classList.toggle('no-nav', !hasData || ['welcome', 'pick', 'dates'].includes(route));
   document.body.classList.toggle('is-landing', route === 'welcome');
-}
-
-function drawBanner() {
-  banner.replaceChildren();
-  if (!store.isDemo()) return;
-  const data = store.load();
-  const week = data.tracked.length ? eng.currentWeek(data.tracked[0].startDate) : 8;
-  const range = h('input', { type: 'range', min: '1', max: '13', step: '1', value: String(week), id: 'demo-week', 'aria-label': 'Preview week' });
-  const out = h('output', { for: 'demo-week', text: `Week ${week}` });
-  range.addEventListener('input', () => { out.textContent = `Week ${range.value}`; });
-  range.addEventListener('change', () => { demo.fill(parseInt(range.value, 10)); render(); });
-  banner.append(h('div', { class: 'demo-bar' },
-    h('span', { class: 'demo-tag', text: 'Sample data' }),
-    h('label', { class: 'demo-label', for: 'demo-week', text: 'Preview week' }), range, out,
-    h('button', { class: 'btn btn-small btn-quiet', type: 'button', text: 'Leave sample', onclick: () => { demo.clear(); refresh('#/'); } })));
 }
 
 // Remembers the screens visited in this tab, so Back returns to the previous one.
@@ -110,7 +93,6 @@ function render() {
   const stack = track(location.hash || '#/');
   closeModal();
   view.replaceChildren();
-  drawBanner();
   drawBack(route, parts, stack);
   setNav(route);
   const fn = {

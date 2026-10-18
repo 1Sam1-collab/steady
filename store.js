@@ -1,7 +1,7 @@
 // Saves and loads her plan and check-ins in this browser only.
 const REAL_KEY = 'steady.v1';
-const DEMO_KEY = 'steady.demo.v1';
-const MODE_KEY = 'steady.mode';
+// Keys left by an earlier sample-data preview; removed when she deletes her data.
+const OLD_KEYS = ['steady.demo.v1', 'steady.mode'];
 
 function empty() {
   return {
@@ -22,17 +22,8 @@ function safeRemove(key) {
   try { localStorage.removeItem(key); } catch (e) { /* ignore */ }
 }
 
-export function isDemo() {
-  return safeGet(MODE_KEY) === 'demo';
-}
-
-export function setDemo(on) {
-  if (on) safeSet(MODE_KEY, 'demo');
-  else { safeRemove(MODE_KEY); safeRemove(DEMO_KEY); }
-}
-
 function key() {
-  return isDemo() ? DEMO_KEY : REAL_KEY;
+  return REAL_KEY;
 }
 
 export function load() {
@@ -52,16 +43,6 @@ export function load() {
 
 export function save(data) {
   return safeSet(key(), JSON.stringify(data));
-}
-
-export function saveDemo(data) {
-  return safeSet(DEMO_KEY, JSON.stringify(data));
-}
-
-export function hasRealData() {
-  const raw = safeGet(REAL_KEY);
-  if (!raw) return false;
-  try { return (JSON.parse(raw).tracked || []).length > 0; } catch (e) { return false; }
 }
 
 export function saveCheckin(checkin) {
@@ -91,6 +72,5 @@ export function removeProduct(productId) {
 
 export function deleteAll() {
   safeRemove(REAL_KEY);
-  safeRemove(DEMO_KEY);
-  safeRemove(MODE_KEY);
+  OLD_KEYS.forEach(safeRemove);
 }

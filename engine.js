@@ -130,7 +130,3 @@ export function statusLine(product, checkins, week) {
   return { tone: 'ok', text: 'Change is showing compared with when you started.' };
 }
 
-export function nextMilestone(product, week) {
-  const month = monthOfWeek(week);
-  return (product.months || []).find(m => m.month > month && (m.type === 'brand' || m.type === 'check')) || null;
-}

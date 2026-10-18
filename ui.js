@@ -1,5 +1,5 @@
 // Pop-ups (sheets) and toasts, built in the page. No browser dialogs.
-import { h } from './dom.js';
+import { h } from './dom.js?v=20';
 
 let open = null;
 

@@ -1,5 +1,5 @@
 // Builds one .ics file with daily usage reminders and weekly check-in reminders.
-import { parseDate, today, daysSinceStart, TOTAL_WEEKS } from './engine.js?v=2';
+import { parseDate, today, daysSinceStart, TOTAL_WEEKS } from './engine.js?v=20';
 
 const DAY = 86400000;
 // Daily reminders run until the last product reaches the end of week 13.

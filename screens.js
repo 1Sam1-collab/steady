@@ -1,11 +1,10 @@
 // Draws each screen from the product file and saved data.
-import { h, s, icon } from './dom.js?v=2';
-import * as store from './store.js';
-import * as eng from './engine.js?v=3';
-import * as photos from './photos.js';
-import * as cal from './calendar.js?v=8';
-import * as demo from './demo.js';
-import * as ui from './ui.js?v=8';
+import { h, s, icon } from './dom.js?v=20';
+import * as store from './store.js?v=20';
+import * as eng from './engine.js?v=20';
+import * as photos from './photos.js?v=20';
+import * as cal from './calendar.js?v=20';
+import * as ui from './ui.js?v=20';
 
 const MAX_PRODUCTS = 3;
 const TYPE_LABEL = { brand: 'Be Bodywise says', app: 'App note', next: 'Next milestone', check: 'Steady check' };
@@ -16,10 +15,6 @@ export function init(c) { ctx = c; }
 const P = id => ctx.products.find(p => p.id === id);
 
 function eyebrow(text) { return h('p', { class: 'eyebrow', text }); }
-
-function backLink(label, hash) {
-  return h('a', { class: 'back', href: hash, text: label });
-}
 
 function tabs(data, activeId, base) {
   if (data.tracked.length < 2) return null;
@@ -63,11 +58,6 @@ export function welcome(view) {
     : h('a', { class: cls, href: '#/pick', text: 'Start' });
   const marqueeItems = ['Pick your products', 'Set start dates', 'Rate Week 0', 'Check in every week', 'Watch the trend', 'See a doctor if needed'];
   const marqueeRow = () => h('div', { class: 'marquee-row' }, marqueeItems.map((t, i) => h('span', { class: 'marquee-item' }, h('sup', { text: String(i + 1) }), t, h('span', { class: 'marquee-arrow', 'aria-hidden': 'true', text: '/' }))));
-  const months = [
-    ['Month 1', 'Build the habit.', 'App note'],
-    ['Month 2', 'Baby hair starts to show.', 'Be Bodywise says'],
-    ['Month 3', 'Visible reduction in hair thinning.', 'Be Bodywise says']
-  ];
   view.append(h('div', { class: 'landing' },
     h('section', { class: 'hero' },
       h('div', { class: 'hero-copy' },
@@ -186,16 +176,6 @@ function phoneStage(single) {
   if (single) return h('div', { class: 'stage is-single' }, h('div', { class: 'stage-inner' }, phone('is-center', screenTimeline)));
   return h('div', { class: 'stage' }, h('div', { class: 'stage-inner' },
     phone('is-left', screenCheck), phone('is-center', screenTimeline), phone('is-right', screenProgress)));
-}
-
-function previewMock() {
-  const card = (eb, label, text, chips, cur) => h('div', { class: 'month-card mock' },
-    eyebrow(eb), h('p', { class: 'claim-type', text: label }), h('p', { class: 'claim', text }),
-    h('div', { class: 'chips' }, chips.map((c, i) => h('span', { class: 'chip' + (i < cur ? ' is-done' : i === cur ? ' is-current' : ''), text: c }))));
-  return h('div', { class: 'mock-stack' },
-    card('MONTH 1 · WEEKS 1–4', 'App note', 'Build the habit. Visible change usually isn\'t expected yet.', ['W1', 'W2', 'W3', 'W4'], 4),
-    card('MONTH 2 · WEEKS 5–8', 'Be Bodywise says', 'Baby hair starts to show.', ['W5', 'W6', 'W7', 'W8'], 2),
-    card('MONTH 3 · WEEKS 9–13', 'Be Bodywise says', '"Visible reduction in hair thinning"', ['W9', 'W10', 'W11', 'W12', 'W13'], -1));
 }
 
 /* ---------- 2. Pick products ---------- */
@@ -428,7 +408,6 @@ function scale(sign, value, onPick) {
     h('p', { class: 'scale-chosen', 'aria-live': 'polite', text: value ? sign.anchors[value - 1] : 'Tap a point on the scale' }));
 }
 
-
 /* ---------- Shared: reminders pop-up, home-screen pop-up, week ring ---------- */
 export function reminderSheet() {
   const d = store.load();
@@ -562,7 +541,7 @@ export function timeline(view, productId) {
     p.note ? h('p', { class: 'note', text: p.note }) : null,
     h('div', { class: 'month-grid' }, months)));
 
-  if (!missingBase && !store.isDemo()) {
+  if (!missingBase) {
     const here = location.hash;
     const d = store.load();
     if (!d.profile.calendarPrompted) {
@@ -598,17 +577,6 @@ function weekChip(p, list, w, cur) {
   const href = done ? `#/month/${p.id}/${eng.monthOfWeek(w)}` : `#/checkin/${p.id}/${w}`;
   const state = done ? 'done' : w === cur ? 'due now' : w < cur ? 'missed' : 'upcoming';
   return h('a', { class: cls.join(' '), href, 'aria-label': `Week ${w}, ${state}` }, h('span', { text: `W${w}` }));
-}
-
-function homeScreenCard(data) {
-  if (data.profile.homeScreenDismissed || isStandalone() || store.isDemo()) return null;
-  if (!data.checkins.length) return null;
-  const ios = /iPhone|iPad|iPod/i.test(navigator.userAgent || '');
-  const card = h('div', { class: 'callout' },
-    h('p', { class: 'callout-title', text: 'Keep your history safe' }),
-    h('p', { text: ios ? 'On iPhone, Safari can clear saved data after 7 days without a visit. Tap Share, then Add to Home Screen, to keep it.' : 'Add Steady to your home screen from the browser menu (Add to Home screen or Install app) so it opens like an app.' }),
-    h('button', { class: 'btn btn-quiet', type: 'button', text: 'Got it', onclick: () => { const d = store.load(); d.profile.homeScreenDismissed = true; store.save(d); card.remove(); } }));
-  return card;
 }
 
 /* ---------- 6. Month detail ---------- */
@@ -778,7 +746,6 @@ export function settings(view) {
     h('div', { class: 'settings-group' },
       h('h2', { class: 'subtitle', text: 'Your data' }),
       h('p', { text: 'Everything you enter stays in this browser on this device. Nothing is uploaded, and there is no account.' }),
-      store.isDemo() ? h('button', { class: 'btn btn-outline', type: 'button', text: 'Leave sample data', onclick: () => { demo.clear(); ctx.refresh('#/'); } }) : null,
       delBtn,
       h('p', { class: 'fine' }, h('a', { href: 'terms.html', text: 'Terms of Service' }), ' · ', h('a', { href: 'privacy.html', text: 'Privacy Policy' })))));
 }
