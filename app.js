@@ -135,7 +135,7 @@ let installPrompt = null;
 const a2hsButtons = [];
 function setupAddToHome() {
   const make = cls => {
-    const b = h('button', { class: 'a2hs ' + cls, type: 'button' }, icon('addhome', 'icon'), h('span', { text: 'Add to home screen' }));
+    const b = h('button', { class: 'a2hs ' + cls, type: 'button', 'aria-label': 'Add to home screen' }, icon('addhome', 'icon'), h('span', { class: 'a2hs-full', text: 'Add to home screen' }), h('span', { class: 'a2hs-short', text: 'Add to home' }));
     b.addEventListener('click', async () => {
       if (installPrompt) {
         installPrompt.prompt();

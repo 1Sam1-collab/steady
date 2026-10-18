@@ -689,7 +689,17 @@ body:not(.is-landing) .consult-card .actions { justify-content: center; }
 /* Add to home screen button: header on phones, side menu on laptops. Hidden on the home page. */
 .a2hs { display: inline-flex; align-items: center; gap: 8px; min-height: 36px; padding: 0 12px; border: 1px solid var(--line); border-radius: var(--radius); background: transparent; color: var(--blue); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; }
 .a2hs .icon { width: 18px; height: 18px; flex: 0 0 auto; }
-.a2hs[hidden], body.is-landing .a2hs { display: none; }
+.a2hs[hidden] { display: none !important; }
+body.is-landing .a2hs-side { display: none; }
+.a2hs-short { display: none; }
+.a2hs-top { margin-left: auto; }
+body.is-landing .a2hs-top { margin-right: 8px; color: var(--cream); border-color: rgba(246, 241, 231, 0.6); }
+body.is-landing .a2hs-top .icon, .a2hs .icon { color: inherit; }
+@media (max-width: 479px) {
+  body.is-landing .a2hs-top { padding: 0 10px; gap: 6px; font-size: 13px; }
+  body.is-landing .a2hs-top .a2hs-full { display: none; }
+  body.is-landing .a2hs-top .a2hs-short { display: inline; }
+}
 .a2hs { white-space: nowrap; }
 .a2hs-side { width: 100%; justify-content: flex-start; gap: 8px; padding: 0 10px; font-size: 13px; text-align: left; }
 .a2hs:focus-visible { outline: 2px solid var(--blue); outline-offset: 2px; }
